@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  passedOn: {
+  passedOne: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "PassedOne",
   },

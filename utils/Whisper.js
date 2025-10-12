@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const speechToText = async (audioBuffer) => {
+const speechToText = async (audioBuffer) => {
   const formData = new FormData();
   formData.append("file", audioBuffer, "audio.mp3");
   formData.append("model", "gpt-4o-mini-transcribe");
@@ -22,3 +22,4 @@ export const speechToText = async (audioBuffer) => {
 
   return response.data.text;
 };
+export default speechToText;
