@@ -1,7 +1,8 @@
 // controllers/voiceChatController.js
-const speechToText = require("../utils/whisper");
+const speechToText = require("../utils/Whisper");
 const getGPTResponse = require("../utils/gpt");
-const cloneVoice = require("../utils/elevenLabs");
+const cloneVoice = require("../utils/voiceClone");
+
 const User = require("../models/User");
 
 exports.chatWithPassedOne = async (req, res) => {
