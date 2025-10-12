@@ -4,12 +4,18 @@ const http = require("http");
 const app = express();
 const initializeSocket = require("./Sockets/Socket");
 const { DB1 } = require("./DB/DB1");
+const PassedOneRoute = require("./Router/passedOneRoutes");
+const VoiceChatRoute = require("./Router/voiceChatRoutes");
+const authRoutes = require("./Router/authRoutes");
 
 app.use(cors({ origin: "*" }));
 const server = http.createServer(app);
 // start socket server -
 initializeSocket(server);
 // on DBs
+app.use("/PassedOne", PassedOneRoute);
+app.use("/Chat", VoiceChatRoute);
+app.use("/auth", authRoutes);
 DB1.on("connected", () => {
   console.log("DB1 is connected");
 });
