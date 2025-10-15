@@ -7,8 +7,7 @@ const User = require("../models/User");
 
 exports.chatWithPassedOne = async (req, res) => {
   try {
-    const { userId } = req.body;
-    const audioFile = req.file.path; // multer upload
+    const { userId, audioFile } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
