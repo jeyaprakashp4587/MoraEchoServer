@@ -1,6 +1,6 @@
 const Socket = require("socket.io");
 
-const initializeScoket = (server) => {
+const initializeSocket = (server) => {
   const io = Socket(server, {
     cors: { origin: "*", methods: ["GET", "POST"] },
   });
@@ -12,4 +12,4 @@ const initializeScoket = (server) => {
   });
 };
 
-module.exports = initializeScoket;
+module.exports = initializeSocket;
