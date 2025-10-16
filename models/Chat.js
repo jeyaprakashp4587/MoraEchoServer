@@ -1,3 +1,4 @@
+const express = require("express");
 const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema(
@@ -7,9 +8,9 @@ const chatSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    passedOneId: {
+    personId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "PassedOne",
+      ref: "Person",
       required: true,
     },
     chat: [

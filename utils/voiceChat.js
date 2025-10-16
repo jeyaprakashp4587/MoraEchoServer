@@ -1,19 +1,19 @@
 // controllers/voiceChatController.js
-const speechToText = require("../utils/Whisper");
-const getGPTResponse = require("../utils/gpt");
-const cloneVoice = require("../utils/voiceClone");
+const speechToText = require("./Whisper");
+const getGPTResponse = require("./gpt");
+const cloneVoice = require("./voiceClone");
 
 const User = require("../models/User");
 
-exports.chatWithPassedOne = async (req, res) => {
+exports.VoiceChatWithPerson = async (req, res) => {
   try {
-    const { userId, audioFile } = req.body;
+    const { userId, audioUrl } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // 1️⃣ Extract speech
-    const userText = await speechToText(audioFile);
+    const userText = await speechToText(audioUrl);
 
     // 2️⃣ GPT Response
     const aiResponse = await getGPTResponse(

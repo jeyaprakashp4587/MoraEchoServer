@@ -8,11 +8,12 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mongoose": "^8.18.3",
+    "node-cache": "^5.1.2",
     "nodemon": "^3.1.10",
     "socket.io": "^4.8.1"
   },
   "scripts": {
-    "dev": " nodemon Server.js",
+    "dev": "nodemon Server.js",
     "build": "node i"
   }
 }

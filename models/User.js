@@ -14,10 +14,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  passedOne: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "PassedOne",
-  },
+  person: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Person",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

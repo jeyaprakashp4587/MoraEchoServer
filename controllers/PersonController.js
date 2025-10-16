@@ -1,9 +1,11 @@
 // controllers/passedOneController.js
-const axios = require("axios");
-const PassedOne = require("../models/PassedOne");
-const User = require("../models/User");
-
-exports.createPassedOne = async (req, res) => {
+// const axios = require("axios");
+// const User = require("../models/User");
+import User from "../models/User.js";
+// const Person = require("../models/Person");
+import Person from "../models/Person.js";
+import axios from "axios";
+export const createPerson = async (req, res) => {
   try {
     const {
       userId,
@@ -33,7 +35,7 @@ exports.createPassedOne = async (req, res) => {
     const voiceId = voiceClone.data.voice_id;
 
     // 2️⃣ Save passed one details in DB
-    const newPassedOne = await PassedOne.create({
+    const newPerson = await Person.create({
       name,
       relation,
       behavior,
@@ -44,11 +46,11 @@ exports.createPassedOne = async (req, res) => {
     });
 
     // 3️⃣ Link to user
-    await User.findByIdAndUpdate(userId, { passedOne: newPassedOne._id });
+    await User.findByIdAndUpdate(userId, { person: newPerson?._id });
 
     res.json({
       message: "Passed one created successfully",
-      passedOne: newPassedOne,
+      person: newPerson,
     });
   } catch (err) {
     console.error(err.response?.data || err.message);
