@@ -1,7 +1,7 @@
 // models/PassedOne.js
 const mongoose = require("mongoose");
 
-const passedOneSchema = new mongoose.Schema({
+const person = new mongoose.Schema({
   name: String,
   relation: String, // ex: "mother", "friend", "lover"
   behavior: String, // like "kind, calm, humorous"
@@ -12,4 +12,4 @@ const passedOneSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("PassedOne", passedOneSchema);
+module.exports = mongoose.model("Person", person);
