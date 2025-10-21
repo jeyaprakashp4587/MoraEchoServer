@@ -1,5 +1,6 @@
 // models/PassedOne.js
 const mongoose = require("mongoose");
+const { DB1 } = require("../DB/DB1");
 
 const person = new mongoose.Schema({
   name: String,
@@ -12,4 +13,4 @@ const person = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Person", person);
+module.exports = DB1.model("Person", person);
