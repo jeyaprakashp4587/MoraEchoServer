@@ -23,7 +23,7 @@ export const cacheUserData = async (req, res, next) => {
     }
 
     // 2️⃣ Fetch from DB
-    const user = await User.findById(userId).select("name language email");
+    const user = await User.findById(userId).select("name language email _id");
     if (!user) {
       console.log("User not found in DB");
       return next();

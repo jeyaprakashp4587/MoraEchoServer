@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const { DB1 } = require("../DB/DB1");
 
 const chatSchema = new mongoose.Schema(
   {
@@ -34,4 +35,4 @@ const chatSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Chat", chatSchema);
+module.exports = DB1.model("Chat", chatSchema);

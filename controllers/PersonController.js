@@ -5,6 +5,7 @@ import User from "../models/User.js";
 // const Person = require("../models/Person");
 import Person from "../models/Person.js";
 import axios from "axios";
+import FormData from "form-data";
 export const createPerson = async (req, res) => {
   try {
     const {
@@ -16,23 +17,43 @@ export const createPerson = async (req, res) => {
       imageUrl,
       voiceSampleUrl,
     } = req.body;
+    console.log(
+      userId,
+      name,
+      relation,
+      behavior,
+      language,
+      imageUrl,
+      voiceSampleUrl
+    );
 
-    // 1️⃣ Upload the voice sample to ElevenLabs for cloning
+    // 1️⃣ Fetch the audio from Cloudinary
+    const audioResponse = await axios.get(voiceSampleUrl, {
+      responseType: "stream",
+    });
+
+    // 2️⃣ Prepare FormData
+    const formData = new FormData();
+    formData.append("name", `${name}_${Date.now()}`);
+    formData.append("files", audioResponse.data, {
+      filename: "voice.mp3",
+      contentType: "audio/mpeg",
+    });
+
+    // 3️⃣ Send to ElevenLabs
     const voiceClone = await axios.post(
       "https://api.elevenlabs.io/v1/voices/add",
-      {
-        name: `${name}_${Date.now()}`,
-        files: [voiceSampleUrl],
-      },
+      formData,
       {
         headers: {
           "xi-api-key": process.env.ELEVENLABS_API_KEY,
-          "Content-Type": "application/json",
+          ...formData.getHeaders(),
         },
       }
     );
 
     const voiceId = voiceClone.data.voice_id;
+    console.log("Voice id", voiceId);
 
     // 2️⃣ Save passed one details in DB
     const newPerson = await Person.create({

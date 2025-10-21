@@ -1,39 +1,20 @@
-// controllers/voiceChatController.js
-const speechToText = require("./Whisper");
-const getGPTResponse = require("./gpt");
-const cloneVoice = require("./voiceClone");
+import speechToText from "./Whisper.js";
+import { getGPTResponse } from "./gpt.js";
+import { cloneVoice } from "./voiceClone.js";
 
-const User = require("../models/User");
-
-exports.VoiceChatWithPerson = async (req, res) => {
+export const VoiceChatWithPerson = async (person, audioUrl) => {
   try {
-    const { userId, audioUrl } = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
     // 1️⃣ Extract speech
     const userText = await speechToText(audioUrl);
 
     // 2️⃣ GPT Response
-    const aiResponse = await getGPTResponse(
-      userText,
-      user.passedOne.personality,
-      user.passedOne.language
-    );
+    const aiResponse = await getGPTResponse(person, userText);
 
     // 3️⃣ Clone Voice
-    const clonedVoiceUrl = await cloneVoice(
-      aiResponse,
-      user.passedOne.voiceUrl
-    );
-
-    res.json({
-      text: aiResponse,
-      audioUrl: clonedVoiceUrl,
-    });
+    const clonedVoiceUrl = await cloneVoice(aiResponse, person?.voiceId);
+    return { audioUrl: clonedVoiceUrl };
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return { msg: "error on generate voice" };
   }
 };

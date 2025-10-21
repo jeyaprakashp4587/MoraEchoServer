@@ -1,6 +1,7 @@
 import axios from "axios";
 import FormData from "form-data";
 import dotenv from "dotenv";
+
 // dotenv
 dotenv.config();
 
@@ -31,8 +32,7 @@ const speechToText = async (audioUrl) => {
 
     return response.data.text;
   } catch (error) {
-    console.error("Error in speechToText:", error.message);
-    throw error;
+    return { msg: "Error in speechToText" };
   }
 };
 
