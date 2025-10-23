@@ -1,13 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-const http = require("http");
+import express from "express";
+import cors from "cors";
+import http from "http";
 const app = express();
-const initializeSocket = require("./Sockets/Socket");
-const { DB1 } = require("./DB/DB1");
-const PersonRoutes = require("./Router/personRoutes");
-const authRoutes = require("./Router/authRoutes");
-const bodyParser = require("body-parser");
-const chatRoutes = require("./Router/chatRoutes");
+import initializeSocket from "./Sockets/Socket.js";
+import DB1 from "./DB/DB1.js";
+import PersonRoutes from "./Router/personRoutes.js";
+import authRoutes from "./Router/authRoutes.js";
+import bodyParser from "body-parser";
+import chatRoutes from "./Router/chatRoutes.js";
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());

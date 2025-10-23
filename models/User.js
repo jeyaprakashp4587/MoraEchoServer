@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { DB1 } = require("../DB/DB1");
+import mongoose from "mongoose";
+import DB1 from "../DB/DB1.js";
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -27,4 +27,4 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-module.exports = DB1.model("User", userSchema);
+export default DB1.model("User", userSchema);

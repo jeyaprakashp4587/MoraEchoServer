@@ -1,15 +1,15 @@
-const Socket = require("socket.io");
+import { Server } from "socket.io";
 
 const initializeSocket = (server) => {
-  const io = Socket(server, {
+  const io = new Server(server, {
     cors: { origin: "*", methods: ["GET", "POST"] },
   });
-  // connet the socket
-  io.on("connect", async (socket) => {
+
+  io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
-    console.log("fd");
-    console.log("socket connected sucessfully");
+    console.log("User connected:", userId);
+    console.log("Socket connected successfully!");
   });
 };
 
-module.exports = initializeSocket;
+export default initializeSocket;
