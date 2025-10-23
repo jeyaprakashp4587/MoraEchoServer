@@ -1,6 +1,6 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const { DB1 } = require("../DB/DB1");
+import express from "express";
+import mongoose from "mongoose";
+import DB1 from "../DB/DB1.js";
 
 const chatSchema = new mongoose.Schema(
   {
@@ -34,5 +34,4 @@ const chatSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-module.exports = DB1.model("Chat", chatSchema);
+export default DB1.model("Chat", chatSchema);

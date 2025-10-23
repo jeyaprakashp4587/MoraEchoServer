@@ -1,17 +1,16 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const {
+import {
   createChat,
   getChatsByUserAndPerson,
-  updateChat,
   deleteChat,
   updateTextChat,
-} = require("../controllers/chatController");
-const { cacheUserData } = require("../Middleware/cacheMiddleware");
+} from "../controllers/chatController.js";
+import { cacheUserData } from "../Middleware/cacheMiddleware.js";
 router.use(cacheUserData);
 router.post("/create", createChat);
 router.get("/chats/:userId/:passedOneId", getChatsByUserAndPerson);
 router.put("/update/:chatId", updateTextChat);
 router.delete("/delete/:chatId", deleteChat);
 
-module.exports = router;
+export default router;

@@ -1,8 +1,8 @@
 // routes/passedOneRoutes.js
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { createPerson } = require("../controllers/PersonController");
+import { createPerson } from "../controllers/PersonController.js";
 
 router.post("/create", createPerson);
 
-module.exports = router;
+export default router;
