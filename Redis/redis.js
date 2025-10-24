@@ -23,7 +23,7 @@ const connectRedis = async () => {
     });
 
     redisClient.on("ready", () => {
-      console.log("Redis Client Ready");
+      // console.log("Redis Client Ready");
     });
 
     redisClient.on("end", () => {
@@ -34,7 +34,7 @@ const connectRedis = async () => {
 
     // Test connection
     const pong = await redisClient.ping();
-    console.log("Ping response:", pong); // should print PONG
+    // console.log("Ping response:", pong); // should print PONG
   } catch (error) {
     console.error("Redis connection failed:", error);
     throw error;
@@ -44,6 +44,8 @@ const connectRedis = async () => {
 // Cache helpers
 export const setCache = async (key, value, expireTime = 3600) => {
   try {
+    console.log("key cached");
+
     await redisClient.set(key, JSON.stringify(value), {
       EX: expireTime,
     });

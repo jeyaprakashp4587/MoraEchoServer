@@ -6,19 +6,36 @@ import mongoose from "mongoose";
 import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
+    const { name, email, password, referralCode } = req.body;
+    const existingUser = await User.exists({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    let code;
+    do {
+      code = generateReferralCode();
+    } while (await User.exists({ referralCode: code }));
+    // add credit to refered user
+    let findReferredUser;
+    if (referralCode) {
+      if (findReferredUser) {
+        findReferredUser = await User.findOneAndUpdate(
+          { referralCode: referralCode },
+          { $inc: { amount: 5 } }
+        );
+      } else {
+        return res.status(404).json({ msg: "no referl user found" });
+      }
+    }
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
+      referralCode: code,
+      amount: findReferredUser ? 15 : 10,
     });
     const accessToken = await createAccessToken(newUser._id);
     const refreshToken = await createRefreshToken(newUser._id);

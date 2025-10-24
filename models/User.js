@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
       ref: "Persons",
     },
   ],
+  referralCode: { type: String, unique: true },
+  amount: {
+    type: Number,
+    default: 5,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

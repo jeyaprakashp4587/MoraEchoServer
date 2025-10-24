@@ -1,6 +1,6 @@
 // const Chat = require("../models/Chat.js");
 import Chat from "../models/Chat.js";
-import { getCache, setCache } from "../Redis/redis.js";
+import { deleteCache, getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
 // create new chat
@@ -50,6 +50,8 @@ export const updateVoiceMessage = async (req, res) => {
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
+      console.log("redis cached", cachedPersonData);
+
       person = {
         name: cachedPersonData.personId?.name || "Unknown",
         relation: cachedPersonData.personId?.relation || "someone close",
@@ -115,16 +117,19 @@ export const updateTextChat = async (req, res) => {
       },
       { new: true }
     );
+    // await deleteCache(`cache${chatId}of${req.userId}`);
     // getPsersonData by user chat
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
+      // console.log();
+      console.log("Redis cached", cachedPersonData);
+
       person = {
-        name: cachedPersonData.personId?.name || "Unknown",
-        relation: cachedPersonData.personId?.relation || "someone close",
-        behavior:
-          cachedPersonData.personId?.behavior || "kind, warm, and caring",
-        language: cachedPersonData.personId?.language || "English",
+        name: cachedPersonData.person.name || "Unknown",
+        relation: cachedPersonData.person?.relation || "someone close",
+        behavior: cachedPersonData.person?.behavior || "kind, warm, and caring",
+        language: cachedPersonData.person?.language || "English",
         RelUserName: req.user.name || "User",
       };
     } else {
@@ -141,12 +146,12 @@ export const updateTextChat = async (req, res) => {
         RelUserName: req.user.name || "User",
         // voiceId: personData.personId?.voiceId,
       };
-      await setCache(`cache${chatId}of${req.userId}`, person, 2000);
+      await setCache(`cache${chatId}of${req.userId}`, { person: person }, 2000);
     }
 
     // Generate GPT response
     const aiResponse = await getGPTResponse(person, newMessage);
-    console.log("ai Response", aiResponse);
+    // console.log("ai Response", aiResponse);
 
     // Save GPT message
     const aiMessage = {
