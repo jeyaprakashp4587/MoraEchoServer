@@ -8,8 +8,6 @@ const openai = new OpenAI({
 });
 
 export const getGPTResponse = async (Person, newMessage) => {
-  console.log(Person, newMessage);
-
   const prompt = `
 Act as ${Person.name}, the ${Person.relation} of ${
     Person.RelUserName

@@ -8,7 +8,8 @@ import PersonRoutes from "./Router/personRoutes.js";
 import authRoutes from "./Router/authRoutes.js";
 import bodyParser from "body-parser";
 import chatRoutes from "./Router/chatRoutes.js";
-import { connectRedis } from "./Redis/redis.js";
+import { connectRedis, deleteCache, setCache } from "./Redis/redis.js";
+import generateReferralCode from "./utils/generateReferralCode.js";
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
@@ -19,6 +20,7 @@ initializeSocket(server);
 // connect redid
 (async () => {
   await connectRedis();
+  // generateReferralCode();
 })();
 // on DBs
 app.use("/person", PersonRoutes);
