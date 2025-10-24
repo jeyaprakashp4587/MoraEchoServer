@@ -16,9 +16,9 @@ const server = http.createServer(app);
 // start socket server -
 initializeSocket(server);
 // on DBs
-app.use("/Person", PersonRoutes);
-app.use("/Chat", chatRoutes);
-app.use("/Auth", authRoutes);
+app.use("/person", PersonRoutes);
+app.use("/chat", chatRoutes);
+app.use("/auth", authRoutes);
 DB1.on("connected", () => {
   console.log("DB1 is connected");
 });

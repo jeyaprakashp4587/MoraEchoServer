@@ -11,7 +11,7 @@ const chatSchema = new mongoose.Schema(
     },
     personId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Person",
+      ref: "Persons",
       required: true,
     },
     chat: [
@@ -34,4 +34,4 @@ const chatSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-export default DB1.model("Chat", chatSchema);
+export default DB1.model("Chats", chatSchema);

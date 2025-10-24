@@ -2,24 +2,24 @@
 import Chat from "../models/Chat.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
-// 🟢 Create a new chat (first message)
+// create new chat
 export const createChat = async (req, res) => {
   try {
-    const { userId, personId } = req.body; // chat = [{sender, message, audioUrl?}]
+    const { personId } = req.body;
 
     const newChat = await Chat.create({
-      userId,
+      userId: req.userId,
       personId,
     });
 
-    res.status(201).json({ message: "Chat created" });
+    res.status(201).json({ message: "Chat created", newChat });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error creating chat" });
   }
 };
 
-// 🟢 Get all chats by userId and personId
+// get chats by user and person id
 export const getChatsByUserAndPerson = async (req, res) => {
   try {
     const { userId, personId } = req.params;
@@ -46,7 +46,7 @@ export const updateVoiceMessage = async (req, res) => {
       { new: true }
     );
     const personData = await Chat.findById(chatId).populate(
-      "Person",
+      "Persons",
       "name",
       "relation",
       "behavior",
@@ -97,30 +97,30 @@ export const updateTextChat = async (req, res) => {
     };
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
-      { $push: { chat: userMessage } },
+      {
+        $push: {
+          chat: userMessage,
+        },
+      },
       { new: true }
     );
-    const personData = await Chat.findById(chatId).populate(
-      "Person",
-      "name",
-      "relation",
-      "behavior",
-      "language",
-      "voiceId"
-    );
+    const personData = await Chat.findById(chatId).populate({
+      path: "personId",
+      select: "name relation behavior language voiceId",
+    });
 
-    // Use cached user data for GPT
     const person = {
-      name: personData?.name || "Unknown",
-      relation: personData?.relation || "someone close",
-      behavior: personData?.behavior || "kind, warm, and caring",
-      language: personData?.language || "English",
-      RelUserName: req.cachedUser?.name || "User",
-      voiceId: personData?.voiceId,
+      name: personData.personId?.name || "Unknown",
+      relation: personData.personId?.relation || "someone close",
+      behavior: personData.personId?.behavior || "kind, warm, and caring",
+      language: personData.personId?.language || "English",
+      RelUserName: req.user.name || "User",
+      // voiceId: personData.personId?.voiceId,
     };
 
     // Generate GPT response
     const aiResponse = await getGPTResponse(person, newMessage);
+    console.log("ai Response", aiResponse);
 
     // Save GPT message
     const aiMessage = {
@@ -128,9 +128,8 @@ export const updateTextChat = async (req, res) => {
       message: aiResponse,
       audioUrl: null,
     };
-
-    updatedChat.chat.push(aiMessage);
-    await updatedChat.save();
+    updatedChat?.chat.push(aiMessage);
+    await updatedChat?.save();
 
     res.json({ message: "Chat updated", chat: updatedChat });
   } catch (err) {
