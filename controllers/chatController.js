@@ -1,5 +1,6 @@
 // const Chat = require("../models/Chat.js");
 import Chat from "../models/Chat.js";
+import { getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
 // create new chat
@@ -45,24 +46,34 @@ export const updateVoiceMessage = async (req, res) => {
       { $push: { chat: userVoice } },
       { new: true }
     );
-    const personData = await Chat.findById(chatId).populate(
-      "Persons",
-      "name",
-      "relation",
-      "behavior",
-      "language",
-      "voiceId"
-    );
+    // getPsersonData by user chat
+    const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
+    let person = {};
+    if (cachedPersonData) {
+      person = {
+        name: cachedPersonData.personId?.name || "Unknown",
+        relation: cachedPersonData.personId?.relation || "someone close",
+        behavior:
+          cachedPersonData.personId?.behavior || "kind, warm, and caring",
+        language: cachedPersonData.personId?.language || "English",
+        RelUserName: req.user.name || "User",
+      };
+    } else {
+      const personData = await Chat.findById(chatId).populate({
+        path: "personId",
+        select: "name relation behavior language voiceId",
+      });
 
-    // Use cached user data for GPT
-    const person = {
-      name: personData.name || "Unknown",
-      relation: personData.relation || "someone close",
-      behavior: personData.behavior || "kind, warm, and caring",
-      language: personData.language || "English",
-      RelUserName: req.cachedUser?.name || "User",
-      voiceId: personData?.voiceId,
-    };
+      person = {
+        name: personData.personId?.name || "Unknown",
+        relation: personData.personId?.relation || "someone close",
+        behavior: personData.personId?.behavior || "kind, warm, and caring",
+        language: personData.personId?.language || "English",
+        RelUserName: req.user.name || "User",
+        // voiceId: personData.personId?.voiceId,
+      };
+      await setCache(`cache${chatId}of${req.userId}`, person, 2000);
+    }
     // create person voice
     const personVoiceUrl = await VoiceChatWithPerson(newVoice, person).catch(
       (err) => {
@@ -104,19 +115,34 @@ export const updateTextChat = async (req, res) => {
       },
       { new: true }
     );
-    const personData = await Chat.findById(chatId).populate({
-      path: "personId",
-      select: "name relation behavior language voiceId",
-    });
+    // getPsersonData by user chat
+    const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
+    let person = {};
+    if (cachedPersonData) {
+      person = {
+        name: cachedPersonData.personId?.name || "Unknown",
+        relation: cachedPersonData.personId?.relation || "someone close",
+        behavior:
+          cachedPersonData.personId?.behavior || "kind, warm, and caring",
+        language: cachedPersonData.personId?.language || "English",
+        RelUserName: req.user.name || "User",
+      };
+    } else {
+      const personData = await Chat.findById(chatId).populate({
+        path: "personId",
+        select: "name relation behavior language voiceId",
+      });
 
-    const person = {
-      name: personData.personId?.name || "Unknown",
-      relation: personData.personId?.relation || "someone close",
-      behavior: personData.personId?.behavior || "kind, warm, and caring",
-      language: personData.personId?.language || "English",
-      RelUserName: req.user.name || "User",
-      // voiceId: personData.personId?.voiceId,
-    };
+      person = {
+        name: personData.personId?.name || "Unknown",
+        relation: personData.personId?.relation || "someone close",
+        behavior: personData.personId?.behavior || "kind, warm, and caring",
+        language: personData.personId?.language || "English",
+        RelUserName: req.user.name || "User",
+        // voiceId: personData.personId?.voiceId,
+      };
+      await setCache(`cache${chatId}of${req.userId}`, person, 2000);
+    }
 
     // Generate GPT response
     const aiResponse = await getGPTResponse(person, newMessage);
