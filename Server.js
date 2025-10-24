@@ -8,6 +8,7 @@ import PersonRoutes from "./Router/personRoutes.js";
 import authRoutes from "./Router/authRoutes.js";
 import bodyParser from "body-parser";
 import chatRoutes from "./Router/chatRoutes.js";
+import { connectRedis } from "./Redis/redis.js";
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
@@ -15,6 +16,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const server = http.createServer(app);
 // start socket server -
 initializeSocket(server);
+// connect redid
+(async () => {
+  await connectRedis();
+})();
 // on DBs
 app.use("/person", PersonRoutes);
 app.use("/chat", chatRoutes);
