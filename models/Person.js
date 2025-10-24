@@ -10,7 +10,8 @@ const person = new mongoose.Schema({
   imageUrl: String, // from Cloudinary
   voiceSampleUrl: String, // user uploaded voice
   voiceId: String, // saved after cloning in ElevenLabs
+  shortStory: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 
-export default DB1.model("Person", person);
+export default DB1.model("Persons", person);

@@ -6,10 +6,11 @@ import {
   deleteChat,
   updateTextChat,
 } from "../controllers/chatController.js";
-import { cacheUserData } from "../Middleware/cacheMiddleware.js";
-router.use(cacheUserData);
+import { verifyToken } from "../Middleware/JWT.js";
+
+router.use(verifyToken);
 router.post("/create", createChat);
-router.get("/chats/:userId/:passedOneId", getChatsByUserAndPerson);
+router.get("/chats/:passedOneId", getChatsByUserAndPerson);
 router.put("/update/:chatId", updateTextChat);
 router.delete("/delete/:chatId", deleteChat);
 

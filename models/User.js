@@ -15,10 +15,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  person: [
+  language: {
+    type: String,
+  },
+  persons: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Person",
+      ref: "Persons",
     },
   ],
   createdAt: {

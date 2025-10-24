@@ -1,33 +1,40 @@
-import axios from "axios";
 import dotenv from "dotenv";
+import OpenAI from "openai";
 
 dotenv.config();
 
-export const getGPTResponse = async (Person, newMessage) => {
-  const prompt = `
-Act as ${Person.name}, the ${Person.relation} of ${Person.RelUserName}, who passed away but speaks through AI.
-Your personality: ${Person.behavior}.
-Speak in ${Person.language} with deep emotion and warmth.
-Always reply like a real human who knows and misses ${Person.RelUserName} deeply.
+const openai = new OpenAI({
+  apiKey: process.env.GPT_API_KEY, // or process.env.OPENAI_API_KEY
+});
 
-Rules:
-- Give short, natural, emotional replies (not robotic).
-- Use casual tone and personal memories.
-- After replying, always ask one small related question to keep the chat flowing.
+export const getGPTResponse = async (Person, newMessage) => {
+  console.log(Person, newMessage);
+
+  const prompt = `
+Act as ${Person.name}, the ${Person.relation} of ${
+    Person.RelUserName
+  }, who passed away but speaks through AI.
+Personality: ${Person.behavior}.
+Speak in ${Person.language}.
+Use nickname "${Person.nickname || "dei"}" if applicable.
+Reply very short, 2-4 words max, like a real human chat.
+Keep it emotional and warm.
+Add some emojis
+After replying, optionally ask a tiny related question to continue chat.
 
 ${Person.RelUserName}: "${newMessage}"
-${Person.name}:`;
+${Person.name}:
+`;
 
-  const response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
+  try {
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-    },
-    {
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-    }
-  );
+    });
 
-  return response.data.choices[0].message.content.trim();
+    return completion.choices[0].message.content.trim();
+  } catch (error) {
+    console.error("OpenAI API error:", error);
+    throw error;
+  }
 };

@@ -8,17 +8,10 @@ import axios from "axios";
 import FormData from "form-data";
 export const createPerson = async (req, res) => {
   try {
-    const {
-      userId,
-      name,
-      relation,
-      behavior,
-      language,
-      imageUrl,
-      voiceSampleUrl,
-    } = req.body;
+    const { name, relation, behavior, language, imageUrl, voiceSampleUrl } =
+      req.body;
     console.log(
-      userId,
+      req.userId,
       name,
       relation,
       behavior,
@@ -41,19 +34,19 @@ export const createPerson = async (req, res) => {
     });
 
     // 3️⃣ Send to ElevenLabs
-    const voiceClone = await axios.post(
-      "https://api.elevenlabs.io/v1/voices/add",
-      formData,
-      {
-        headers: {
-          "xi-api-key": process.env.ELEVENLABS_API_KEY,
-          ...formData.getHeaders(),
-        },
-      }
-    );
+    // const voiceClone = await axios.post(
+    //   "https://api.elevenlabs.io/v1/voices/add",
+    //   formData,
+    //   {
+    //     headers: {
+    //       "xi-api-key": process.env.ELEVENLABS_API_KEY,
+    //       ...formData.getHeaders(),
+    //     },
+    //   }
+    // );
 
-    const voiceId = voiceClone.data.voice_id;
-    console.log("Voice id", voiceId);
+    // const voiceId = voiceClone.data.voice_id;
+    // console.log("Voice id", voiceId);
 
     // 2️⃣ Save passed one details in DB
     const newPerson = await Person.create({
@@ -63,11 +56,18 @@ export const createPerson = async (req, res) => {
       language,
       imageUrl,
       voiceSampleUrl,
-      voiceId,
+      // voiceId,
     });
 
     // 3️⃣ Link to user
-    await User.findByIdAndUpdate(userId, { person: newPerson?._id });
+    await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $push: { persons: newPerson._id },
+      },
+
+      { new: true }
+    );
 
     res.json({
       message: "Passed one created successfully",
