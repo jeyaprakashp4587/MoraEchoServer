@@ -1,8 +1,6 @@
-// const bcrypt = require("bcryptjs");
-// const User = require("../models/User");
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import mongoose from "mongoose";
+
 import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
 export const registerUser = async (req, res) => {
   try {
@@ -18,7 +16,7 @@ export const registerUser = async (req, res) => {
     do {
       code = generateReferralCode();
     } while (await User.exists({ referralCode: code }));
-    // add credit to refered user
+
     let findReferredUser;
     if (referralCode) {
       if (findReferredUser) {
