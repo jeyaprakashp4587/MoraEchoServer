@@ -29,6 +29,9 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 5,
   },
+  country: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

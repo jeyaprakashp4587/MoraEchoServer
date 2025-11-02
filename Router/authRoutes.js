@@ -1,11 +1,16 @@
 import express from "express";
 const router = express.Router();
-import { login, refresh, registerUser } from "../controllers/authController.js";
+import {
+  getUser,
+  login,
+  refresh,
+  registerUser,
+} from "../controllers/authController.js";
+import { verifyToken } from "../Middleware/JWT.js";
 
-// POST /api/auth/register
-// router.use(cacheUserData);
 router.post("/register", registerUser);
 router.post("/login", login);
 router.post("/refresh", refresh);
+router.get("/getUser/:userId", verifyToken, getUser);
 
 export default router;

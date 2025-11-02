@@ -8,7 +8,7 @@ export const createAccessToken = async (id) => {
     { userId: id },
     process.env.JWT_ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "1hr",
+      expiresIn: "1h",
     }
   );
   return accesstoken;
@@ -35,9 +35,11 @@ export const verifyToken = async (req, res, next) => {
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     req.userId = decoded.userId;
-    req.user = user; // now it's the actual user object
+    req.user = user;
     next();
   } catch (err) {
+    console.log("token expired");
+
     return res.status(403).json({ msg: "Invalid or expired token" });
   }
 };
