@@ -1,10 +1,13 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import generateReferralCode from "../utils/generateReferralCode.js";
 
 import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, referralCode } = req.body;
+    const { name, email, password, referralCode, country, language } = req.body;
+    console.log(name, email, password, referralCode, country, language);
+    // return;
     const existingUser = await User.exists({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
@@ -12,20 +15,20 @@ export const registerUser = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    // generate referralcode
     let code;
     do {
       code = generateReferralCode();
     } while (await User.exists({ referralCode: code }));
-
+    //
     let findReferredUser;
     if (referralCode) {
-      if (findReferredUser) {
-        findReferredUser = await User.findOneAndUpdate(
-          { referralCode: referralCode },
-          { $inc: { amount: 5 } }
-        );
-      } else {
-        return res.status(404).json({ msg: "no referl user found" });
+      findReferredUser = await User.findOneAndUpdate(
+        { referralCode: referralCode },
+        { $inc: { amount: 5 } }
+      );
+      if (!findReferredUser) {
+        return res.status(404).json({ error: "no referl user found" });
       }
     }
     const newUser = await User.create({
@@ -33,6 +36,8 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       referralCode: code,
+      country,
+      language,
       amount: findReferredUser ? 15 : 10,
     });
     const accessToken = await createAccessToken(newUser._id);
@@ -50,13 +55,14 @@ export const registerUser = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 // login
 export const login = async (req, res) => {
   const { email: Email, password: Password } = req.body;
   try {
+    // return;
     if (!Email || !Password) {
       return res
         .status(400)
@@ -83,10 +89,9 @@ export const login = async (req, res) => {
     delete userData.password;
     const accessToken = await createAccessToken(userData._id);
     const refreshToken = await createRefreshToken(userData._id);
-    console.log(accessToken);
 
     res.json({
-      message: "SignIn Successful",
+      message: "login successful",
       user: userData,
       tokens: { accessToken, refreshToken },
     });
@@ -101,12 +106,13 @@ export const login = async (req, res) => {
 export const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
+
     if (!refreshToken)
       return res.status(401).json({ msg: "No token provided" });
 
     jwt.verify(
       refreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
+      process.env.JWT_REFRESH_TOKEN_SECRET,
       (err, decode) => {
         if (err) return res.status(403).json({ msg: "Invalid token" });
         const newAccessToken = createAccessToken(decode.userId);
@@ -115,5 +121,25 @@ export const refresh = async (req, res) => {
     );
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// get User
+export const getUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const userData = await User.findById(userId, { password: 0 });
+    if (userData) {
+      const accessToken = await createAccessToken(userData._id);
+      const refreshToken = await createRefreshToken(userData._id);
+      res
+        .status(200)
+        .json({ user: userData, tokens: { accessToken, refreshToken } });
+    } else {
+      res.status(404).json({ message: "user not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
