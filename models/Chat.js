@@ -14,6 +14,10 @@ const chatSchema = new mongoose.Schema(
       ref: "Persons",
       required: true,
     },
+    ChatType: {
+      type: String,
+      default: "Mora",
+    },
     chat: [
       {
         sender: {
