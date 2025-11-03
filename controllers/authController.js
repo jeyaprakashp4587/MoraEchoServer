@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import generateReferralCode from "../utils/generateReferralCode.js";
 
@@ -106,20 +107,23 @@ export const login = async (req, res) => {
 export const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
-
     if (!refreshToken)
       return res.status(401).json({ msg: "No token provided" });
 
-    jwt.verify(
+    // Verify the refresh token
+    const decoded = jwt.verify(
       refreshToken,
-      process.env.JWT_REFRESH_TOKEN_SECRET,
-      (err, decode) => {
-        if (err) return res.status(403).json({ msg: "Invalid token" });
-        const newAccessToken = createAccessToken(decode.userId);
-        res.json({ accessToken: newAccessToken });
-      }
+      process.env.JWT_REFRESH_TOKEN_SECRET
     );
+
+    // Create a new access token (await the async function)
+    const newAccessToken = await createAccessToken(decoded.userId);
+    res.json({ accessToken: newAccessToken });
   } catch (err) {
+    if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+      return res.status(403).json({ msg: "Invalid or expired refresh token" });
+    }
+    console.error("Refresh token error:", err);
     res.status(500).json({ error: err.message });
   }
 };

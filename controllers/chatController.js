@@ -1,33 +1,55 @@
 // const Chat = require("../models/Chat.js");
 import Chat from "../models/Chat.js";
+import User from "../models/User.js";
 import { deleteCache, getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
 // create new chat
 export const createChat = async (req, res) => {
   try {
-    const { personId } = req.body;
+    const { personId, chatType } = req.body;
 
     const newChat = await Chat.create({
       userId: req.userId,
       personId,
+      ChatType: chatType,
     });
 
-    res.status(201).json({ message: "Chat created", newChat });
+    res.status(200).json({ message: "Chat created", newChat });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating chat" });
+    // console.error(err);
+    res.status(500).json({ error: "Error creating chat" });
   }
 };
 
 // get chats by user and person id
 export const getChatsByUserAndPerson = async (req, res) => {
   try {
-    const { userId, personId } = req.params;
-    const chats = await Chat.find({ userId, personId });
+    const { personId } = req.params;
+    const chats = await Chat.find({ userId: req.userId, personId });
     res.json(chats);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching chats", error });
+    res.status(500).json({ error: "Error fetching chats", error });
+  }
+};
+// get all chats for user
+export const getAllChatsList = async (req, res) => {
+  try {
+    // Find all chats for this user and populate person details
+    const chats = await Chat.find({ userId: req.userId })
+      .populate({
+        path: "personId",
+        select: "name relation behavior language imageUrl voiceId",
+      })
+      .sort({ updatedAt: -1 }); // Sort by most recent first
+
+    res.status(200).json({
+      message: "Chats fetched successfully",
+      chats,
+    });
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    res.status(500).json({ error: "Error fetching chats" });
   }
 };
 // Update voice chat
@@ -77,11 +99,13 @@ export const updateVoiceMessage = async (req, res) => {
       await setCache(`cache${chatId}of${req.userId}`, person, 2000);
     }
     // create person voice
-    const personVoiceUrl = await VoiceChatWithPerson(newVoice, person).catch(
-      (err) => {
-        return res.status(503).json({ msg: "error on generate voice" });
-      }
-    );
+    const personVoiceUrl = await VoiceChatWithPerson(
+      updateVoiceChat.ChatType,
+      newVoice,
+      person
+    ).catch((err) => {
+      return res.status(503).json({ error: "error on generate voice" });
+    });
     // save and return the person generated audio url
     if (personVoiceUrl.audioUrl) {
       await updateVoiceChat.chat.push({
@@ -93,7 +117,7 @@ export const updateVoiceMessage = async (req, res) => {
       return res.status(200).json({ voiceUrl: personVoiceUrl.audioUrl });
     }
   } catch (error) {
-    return res.status(500).json({ msg: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 };
 // 🟢 Update Text chat (add new message)
@@ -150,7 +174,11 @@ export const updateTextChat = async (req, res) => {
     }
 
     // Generate GPT response
-    const aiResponse = await getGPTResponse(person, newMessage);
+    const aiResponse = await getGPTResponse(
+      updatedChat.ChatType,
+      person,
+      newMessage
+    );
     // console.log("ai Response", aiResponse);
 
     // Save GPT message
@@ -162,10 +190,54 @@ export const updateTextChat = async (req, res) => {
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
 
-    res.json({ message: "Chat updated", chat: updatedChat });
+    res.status(201).json({ message: "Chat updated", chat: updatedChat });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error updating chat" });
+    res.status(500).json({ error: "Error updating chat" });
+  }
+};
+
+// Get chat messages by chatId with pagination
+export const getChatMessages = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+
+    const chat = await Chat.findOne({
+      _id: chatId,
+      userId: req.userId, // Ensure user owns this chat
+    }).populate({
+      path: "personId",
+      select: "name relation behavior language imageUrl voiceId",
+    });
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const totalMessages = chat.chat.length;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+
+    const startIndex = Math.max(0, totalMessages - pageNum * limitNum);
+    const endIndex = totalMessages - (pageNum - 1) * limitNum;
+
+    // Get the slice of messages (older messages for higher page numbers)
+    const messages = chat.chat.slice(startIndex, endIndex);
+
+    // Has more if there are older messages (lower index messages exist)
+    const hasMore = startIndex > 0;
+
+    res.status(200).json({
+      message: "Messages fetched successfully",
+      messages,
+      hasMore,
+      currentPage: pageNum,
+      totalMessages,
+    });
+  } catch (error) {
+    console.error("Error fetching chat messages:", error);
+    res.status(500).json({ error: "Error fetching chat messages" });
   }
 };
 
@@ -177,6 +249,6 @@ export const deleteChat = async (req, res) => {
     res.json({ message: "Chat deleted successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error deleting chat" });
+    res.status(500).json({ error: "Error deleting chat" });
   }
 };

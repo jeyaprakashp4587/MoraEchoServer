@@ -9,31 +9,24 @@ import FormData from "form-data";
 export const createPerson = async (req, res) => {
   try {
     const { name, relation, behavior, language, imageUrl, voiceSampleUrl } =
-      req.body;
-    console.log(
-      req.userId,
-      name,
-      relation,
-      behavior,
-      language,
-      imageUrl,
-      voiceSampleUrl
-    );
+      req.body.data;
+
+    // host the voice and send to eleven labs
 
     // 1️⃣ Fetch the audio from Cloudinary
-    const audioResponse = await axios.get(voiceSampleUrl, {
-      responseType: "stream",
-    });
+    // const audioResponse = await axios.get(voiceSampleUrl, {
+    //   responseType: "stream",
+    // });
 
-    // 2️⃣ Prepare FormData
-    const formData = new FormData();
-    formData.append("name", `${name}_${Date.now()}`);
-    formData.append("files", audioResponse.data, {
-      filename: "voice.mp3",
-      contentType: "audio/mpeg",
-    });
+    // // 2️⃣ Prepare FormData
+    // const formData = new FormData();
+    // formData.append("name", `${name}_${Date.now()}`);
+    // formData.append("files", audioResponse.data, {
+    //   filename: "voice.mp3",
+    //   contentType: "audio/mpeg",
+    // });
 
-    // 3️⃣ Send to ElevenLabs
+    // // 3️⃣ Send to ElevenLabs
     // const voiceClone = await axios.post(
     //   "https://api.elevenlabs.io/v1/voices/add",
     //   formData,
