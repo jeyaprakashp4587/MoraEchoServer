@@ -8,8 +8,7 @@ import PersonRoutes from "./Router/personRoutes.js";
 import authRoutes from "./Router/authRoutes.js";
 import bodyParser from "body-parser";
 import chatRoutes from "./Router/chatRoutes.js";
-import { connectRedis, deleteCache, setCache } from "./Redis/redis.js";
-import generateReferralCode from "./utils/generateReferralCode.js";
+import { connectRedis } from "./Redis/redis.js";
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());

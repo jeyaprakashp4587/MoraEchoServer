@@ -2,15 +2,19 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import generateReferralCode from "../utils/generateReferralCode.js";
-
 import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
+
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, referralCode, country, language } = req.body;
     console.log(name, email, password, referralCode, country, language);
     // return;
-    const existingUser = await User.exists({ email });
+    const existingUser = await User.exists({
+      email: email.toLowerCase().trim(),
+    });
     if (existingUser) {
+      console.log("login isse");
+
       return res.status(400).json({ message: "Email already registered" });
     }
 
@@ -29,12 +33,12 @@ export const registerUser = async (req, res) => {
         { $inc: { amount: 5 } }
       );
       if (!findReferredUser) {
-        return res.status(404).json({ error: "no referl user found" });
+        return res.status(404).json({ error: "wrong referral code" });
       }
     }
     const newUser = await User.create({
       name,
-      email,
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
       referralCode: code,
       country,
@@ -75,7 +79,7 @@ export const login = async (req, res) => {
     const findEmailUser = await User.findOne({ email: lowerCaseEmail });
 
     if (!findEmailUser) {
-      return res.status(401).json({ error: "Email or Password is incorrect." });
+      return res.status(400).json({ error: "Email or Password is incorrect." });
     }
 
     const isPasswordCorrect = await bcrypt.compare(
@@ -131,12 +135,15 @@ export const refresh = async (req, res) => {
 // get User
 export const getUser = async (req, res) => {
   const { userId } = req.params;
+  console.log("fn", userId);
 
   try {
     const userData = await User.findById(userId, { password: 0 });
     if (userData) {
       const accessToken = await createAccessToken(userData._id);
       const refreshToken = await createRefreshToken(userData._id);
+      console.log("ldmk", userData);
+
       res
         .status(200)
         .json({ user: userData, tokens: { accessToken, refreshToken } });
