@@ -22,27 +22,24 @@ export const createChat = async (req, res) => {
   }
 };
 
-// get chats by user and person id
-export const getChatsByUserAndPerson = async (req, res) => {
-  try {
-    const { personId } = req.params;
-    const chats = await Chat.find({ userId: req.userId, personId });
-    res.json(chats);
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching chats", error });
-  }
-};
 // get all chats for user
 export const getAllChatsList = async (req, res) => {
   try {
-    // Find all chats for this user and populate person details
+  //  get chats from redis 
+  const cachedChats = await getCache(`chats${req.userId}`);
+  if (cachedChats) {
+    return res.status(200).json({
+      message: "Chats fetched successfully",
+      chats: cachedChats,
+    });
+  }
     const chats = await Chat.find({ userId: req.userId })
       .populate({
         path: "personId",
         select: "name relation behavior language imageUrl voiceId",
       })
-      .sort({ updatedAt: -1 }); // Sort by most recent first
-
+      .sort({ updatedAt: -1 }); 
+    await setCache(`chats${req.userId}`, chats, 2000);
     res.status(200).json({
       message: "Chats fetched successfully",
       chats,
@@ -62,13 +59,13 @@ export const updateVoiceMessage = async (req, res) => {
     audioUrl: newVoice,
   };
   try {
-    // first save user voice
+    
     const updateVoiceChat = await Chat.findByIdAndUpdate(
       chatId,
       { $push: { chat: userVoice } },
       { new: true }
     );
-    // getPsersonData by user chat
+   
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
@@ -106,7 +103,7 @@ export const updateVoiceMessage = async (req, res) => {
     ).catch((err) => {
       return res.status(503).json({ error: "error on generate voice" });
     });
-    // save and return the person generated audio url
+  
     if (personVoiceUrl.audioUrl) {
       await updateVoiceChat.chat.push({
         sender: "Person",
@@ -120,11 +117,11 @@ export const updateVoiceMessage = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
-// 🟢 Update Text chat (add new message)
+
 export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { newMessage } = req.body; // {message, audioUrl }
+    const { newMessage } = req.body;
 
     // Save user message first
     const userMessage = {
@@ -197,7 +194,7 @@ export const updateTextChat = async (req, res) => {
   }
 };
 
-// Get chat messages by chatId with pagination
+
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -205,7 +202,7 @@ export const getChatMessages = async (req, res) => {
 
     const chat = await Chat.findOne({
       _id: chatId,
-      userId: req.userId, // Ensure user owns this chat
+      userId: req.userId, 
     }).populate({
       path: "personId",
       select: "name relation behavior language imageUrl voiceId",
@@ -222,10 +219,10 @@ export const getChatMessages = async (req, res) => {
     const startIndex = Math.max(0, totalMessages - pageNum * limitNum);
     const endIndex = totalMessages - (pageNum - 1) * limitNum;
 
-    // Get the slice of messages (older messages for higher page numbers)
+    
     const messages = chat.chat.slice(startIndex, endIndex);
 
-    // Has more if there are older messages (lower index messages exist)
+    
     const hasMore = startIndex > 0;
 
     res.status(200).json({
@@ -241,7 +238,7 @@ export const getChatMessages = async (req, res) => {
   }
 };
 
-// 🟢 Delete chat
+
 export const deleteChat = async (req, res) => {
   try {
     const { chatId } = req.params;
