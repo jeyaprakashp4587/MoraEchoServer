@@ -7,13 +7,13 @@ import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, referralCode, country, language } = req.body;
-    console.log(name, email, password, referralCode, country, language);
+    // console.log(name, email, password, referralCode, country, language);
     // return;
     const existingUser = await User.exists({
       email: email.toLowerCase().trim(),
     });
     if (existingUser) {
-      console.log("login isse");
+      // console.log("login isse");
 
       return res.status(400).json({ message: "Email already registered" });
     }

@@ -8,6 +8,7 @@ import PersonRoutes from "./Router/personRoutes.js";
 import authRoutes from "./Router/authRoutes.js";
 import bodyParser from "body-parser";
 import chatRoutes from "./Router/chatRoutes.js";
+import coinsRoutes from "./Router/coinsRoutes.js";
 import { connectRedis } from "./Redis/redis.js";
 
 app.use(cors({ origin: "*" }));
@@ -25,6 +26,7 @@ initializeSocket(server);
 app.use("/person", PersonRoutes);
 app.use("/chat", chatRoutes);
 app.use("/auth", authRoutes);
+app.use("/coins", coinsRoutes);
 DB1.on("connected", () => {
   console.log("DB1 is connected");
 });
