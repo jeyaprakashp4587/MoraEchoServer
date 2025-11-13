@@ -135,14 +135,13 @@ export const refresh = async (req, res) => {
 // get User
 export const getUser = async (req, res) => {
   const { userId } = req.params;
-  console.log("fn", userId);
+  // console.log("fn", userId);
 
   try {
     const userData = await User.findById(userId, { password: 0 });
     if (userData) {
       const accessToken = await createAccessToken(userData._id);
       const refreshToken = await createRefreshToken(userData._id);
-      console.log("ldmk", userData);
 
       res
         .status(200)
