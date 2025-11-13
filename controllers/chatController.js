@@ -26,6 +26,8 @@ export const createChat = async (req, res) => {
 export const getAllChatsList = async (req, res) => {
   try {
   //  get chats from redis 
+  // console.log("knvkfgn");
+  
   const cachedChats = await getCache(`chats${req.userId}`);
   if (cachedChats) {
     return res.status(200).json({
@@ -69,7 +71,7 @@ export const updateVoiceMessage = async (req, res) => {
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
-      console.log("redis cached", cachedPersonData);
+      // console.log("redis cached", cachedPersonData);
 
       person = {
         name: cachedPersonData.personId?.name || "Unknown",
@@ -138,14 +140,10 @@ export const updateTextChat = async (req, res) => {
       },
       { new: true }
     );
-    // await deleteCache(`cache${chatId}of${req.userId}`);
     // getPsersonData by user chat
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
-      // console.log();
-      console.log("Redis cached", cachedPersonData);
-
       person = {
         name: cachedPersonData.person.name || "Unknown",
         relation: cachedPersonData.person?.relation || "someone close",
@@ -198,8 +196,6 @@ export const updateTextChat = async (req, res) => {
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { page = 1, limit = 20 } = req.query;
-
     const chat = await Chat.findOne({
       _id: chatId,
       userId: req.userId, 
@@ -211,26 +207,10 @@ export const getChatMessages = async (req, res) => {
     if (!chat) {
       return res.status(404).json({ error: "Chat not found" });
     }
-
-    const totalMessages = chat.chat.length;
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-
-    const startIndex = Math.max(0, totalMessages - pageNum * limitNum);
-    const endIndex = totalMessages - (pageNum - 1) * limitNum;
-
-    
-    const messages = chat.chat.slice(startIndex, endIndex);
-
-    
-    const hasMore = startIndex > 0;
-
     res.status(200).json({
       message: "Messages fetched successfully",
-      messages,
-      hasMore,
-      currentPage: pageNum,
-      totalMessages,
+      messages: chat?.chat,
+      chatUserData: chat?.personId,
     });
   } catch (error) {
     console.error("Error fetching chat messages:", error);
@@ -243,6 +223,9 @@ export const deleteChat = async (req, res) => {
   try {
     const { chatId } = req.params;
     await Chat.findByIdAndDelete(chatId);
+    // console.log(chatId);
+    await deleteCache(`cache${chatId}of${req.userId}`);
+    await deleteCache(`chats${req.userId}`);
     res.json({ message: "Chat deleted successfully" });
   } catch (err) {
     console.error(err);

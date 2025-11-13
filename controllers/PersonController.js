@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import Person from "../models/Person.js";
 import axios from "axios";
 import FormData from "form-data";
+import { deleteCache } from "../Redis/redis.js";
 export const createPerson = async (req, res) => {
   try {
     const { name, relation, behavior, language, imageUrl, voiceSampleUrl } =
@@ -61,7 +62,7 @@ export const createPerson = async (req, res) => {
 
       { new: true }
     );
-
+    await deleteCache(`chats${req.userId}`);
     res.json({
       message: "Passed one created successfully",
       person: newPerson,
