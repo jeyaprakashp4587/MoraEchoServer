@@ -30,7 +30,10 @@ app.use("/coins", coinsRoutes);
 DB1.on("connected", () => {
   console.log("DB1 is connected");
 });
-app.get("/", () => console.log("server alive"));
+app.get("/get", (req, res) => {
+  console.log("server alive");
+  res.send("Server is alivfkdkgfdge");
+});
 const port = process.env.port || 8080;
 server.listen(port, () => console.log(`Server is listening on port ${port}`));
 // https://res.cloudinary.com/dogo7hkhy/video/upload/v1761031419/thanks-for-watching-male-relatable-voice-222995_emccch.mp3
