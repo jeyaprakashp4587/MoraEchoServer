@@ -124,6 +124,7 @@ export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
     const { newMessage } = req.body;
+console.log(chatId,"newMessage", newMessage);
 
     // Save user message first
     const userMessage = {
@@ -131,15 +132,22 @@ export const updateTextChat = async (req, res) => {
       message: newMessage,
       audioUrl: null,
     };
+    console.log(userMessage);
+    
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
         $push: {
-          chat: userMessage,
+          chat:{
+            sender: userMessage?.sender,
+            message: userMessage?.message,
+            audioUrl: userMessage?.audioUrl,
+          }
         },
       },
       { new: true }
     );
+    console.log("updateTextChat", updateTextChat);
     // getPsersonData by user chat
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
@@ -184,7 +192,7 @@ export const updateTextChat = async (req, res) => {
     };
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
-
+    console.log(updatedChat);
     res.status(201).json({ message: "Chat updated", chat: updatedChat });
   } catch (err) {
     console.error(err);
