@@ -26,7 +26,7 @@ const chatSchema = new mongoose.Schema(
         },
         message: {
           type: String,
-          required: true,
+          // required: true,
         },
         audioUrl: String, // optional: cloned or recorded voice
         createdAt: {

@@ -9,6 +9,7 @@ const openai = new OpenAI({
 
 export const getGPTResponse = async (chatType = "Mora", person, newMessage) => {
   let prompt = "";
+console.log(person,"person");
 
   switch (chatType.title || chatType) {
     case "Chat with Passed One":
@@ -55,6 +56,8 @@ ${person.name}:
       break;
 
     case "Chat with Your Future":
+      console.log("person", person);
+      
       prompt = `
 Act as ${person.name}, the future version of ${person.RelUserName} (10 years later).
 Talk wise, calm, supportive, and slightly mysterious ✨.
