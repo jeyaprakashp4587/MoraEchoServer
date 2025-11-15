@@ -25,22 +25,19 @@ export const createChat = async (req, res) => {
 // get all chats for user
 export const getAllChatsList = async (req, res) => {
   try {
-  //  get chats from redis 
-  // console.log("knvkfgn");
-  
-  const cachedChats = await getCache(`chats${req.userId}`);
-  if (cachedChats) {
-    return res.status(200).json({
-      message: "Chats fetched successfully",
-      chats: cachedChats,
-    });
-  }
+    const cachedChats = await getCache(`chats${req.userId}`);
+    if (cachedChats) {
+      return res.status(200).json({
+        message: "Chats fetched successfully",
+        chats: cachedChats,
+      });
+    }
     const chats = await Chat.find({ userId: req.userId })
       .populate({
         path: "personId",
-        select: "name relation behavior language imageUrl voiceId",
+        select: "name imageUrl ",
       })
-      .sort({ updatedAt: -1 }); 
+      .sort({ updatedAt: -1 });
     await setCache(`chats${req.userId}`, chats, 2000);
     res.status(200).json({
       message: "Chats fetched successfully",
@@ -61,13 +58,12 @@ export const updateVoiceMessage = async (req, res) => {
     audioUrl: newVoice,
   };
   try {
-    
     const updateVoiceChat = await Chat.findByIdAndUpdate(
       chatId,
       { $push: { chat: userVoice } },
       { new: true }
     );
-   
+
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
     if (cachedPersonData) {
@@ -105,7 +101,7 @@ export const updateVoiceMessage = async (req, res) => {
     ).catch((err) => {
       return res.status(503).json({ error: "error on generate voice" });
     });
-  
+
     if (personVoiceUrl.audioUrl) {
       await updateVoiceChat.chat.push({
         sender: "Person",
@@ -124,30 +120,25 @@ export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
     const { newMessage } = req.body;
-console.log(chatId,"newMessage", newMessage);
-
     // Save user message first
     const userMessage = {
       sender: "user",
       message: newMessage,
       audioUrl: null,
     };
-    console.log(userMessage);
-    
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
         $push: {
-          chat:{
+          chat: {
             sender: userMessage?.sender,
             message: userMessage?.message,
             audioUrl: userMessage?.audioUrl,
-          }
+          },
         },
       },
       { new: true }
     );
-    console.log("updateTextChat", updateTextChat);
     // getPsersonData by user chat
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
@@ -182,14 +173,17 @@ console.log(chatId,"newMessage", newMessage);
       person,
       newMessage
     );
-    // console.log("ai Response", aiResponse);
-
     // Save GPT message
     const aiMessage = {
       sender: "Person",
       message: aiResponse,
       audioUrl: null,
     };
+    await Chat.findByIdAndUpdate(
+      chatId,
+      { updatedAt: Date.now() },
+      { new: true }
+    );
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
     console.log(updatedChat);
@@ -200,13 +194,12 @@ console.log(chatId,"newMessage", newMessage);
   }
 };
 
-
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
     const chat = await Chat.findOne({
       _id: chatId,
-      userId: req.userId, 
+      userId: req.userId,
     }).populate({
       path: "personId",
       select: "name relation behavior language imageUrl voiceId",
@@ -225,7 +218,6 @@ export const getChatMessages = async (req, res) => {
     res.status(500).json({ error: "Error fetching chat messages" });
   }
 };
-
 
 export const deleteChat = async (req, res) => {
   try {

@@ -18,6 +18,10 @@ const chatSchema = new mongoose.Schema(
       type: String,
       default: "Mora",
     },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
     chat: [
       {
         sender: {
