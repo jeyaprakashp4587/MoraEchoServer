@@ -21,23 +21,23 @@ export const createChat = async (req, res) => {
     res.status(500).json({ error: "Error creating chat" });
   }
 };
-
 // get all chats for user
 export const getAllChatsList = async (req, res) => {
   try {
     const cachedChats = await getCache(`chats${req.userId}`);
-    if (cachedChats) {
-      return res.status(200).json({
-        message: "Chats fetched successfully",
-        chats: cachedChats,
-      });
-    }
-    const chats = await Chat.find({ userId: req.userId })
+    // if (cachedChats) {
+    //   return res.status(200).json({
+    //     message: "Chats fetched successfully",
+    //     chats: cachedChats,
+    //   });
+    // }
+    const chats = await Chat.find({ userId: req.userId }, { chat: 0 })
       .populate({
         path: "personId",
-        select: "name imageUrl ",
+        select: "name imageUrl",
       })
       .sort({ updatedAt: -1 });
+    console.log(chats);
     await setCache(`chats${req.userId}`, chats, 2000);
     res.status(200).json({
       message: "Chats fetched successfully",
