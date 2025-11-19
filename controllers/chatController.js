@@ -15,7 +15,7 @@ export const createChat = async (req, res) => {
       ChatType: chatType,
     });
 
-    res.status(200).json({ message: "Chat created", newChat });
+    res.status(200).json({ message: "Chat created", newChat: newChat?._id });
   } catch (err) {
     // console.error(err);
     res.status(500).json({ error: "Error creating chat" });
@@ -202,7 +202,7 @@ export const getChatMessages = async (req, res) => {
       userId: req.userId,
     }).populate({
       path: "personId",
-      select: "name relation behavior language imageUrl voiceId",
+      select: "name imageUrl",
     });
 
     if (!chat) {

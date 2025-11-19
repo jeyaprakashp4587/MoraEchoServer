@@ -65,7 +65,7 @@ export const createPerson = async (req, res) => {
     await deleteCache(`chats${req.userId}`);
     res.json({
       message: "Passed one created successfully",
-      person: newPerson,
+      person: newPerson._id,
     });
   } catch (err) {
     console.error(err.response?.data || err.message);
