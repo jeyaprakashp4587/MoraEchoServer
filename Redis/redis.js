@@ -23,8 +23,7 @@ const connectRedis = async () => {
     });
 
     redisClient.on("ready", () => {
-      console.log('redis ready');
-      
+      console.log("redis ready");
     });
 
     redisClient.on("end", () => {
@@ -33,19 +32,16 @@ const connectRedis = async () => {
 
     await redisClient.connect();
 
-    
     const pong = await redisClient.ping();
-  
   } catch (error) {
     console.error("Redis connection failed:", error);
     throw error;
   }
 };
 
-
 export const setCache = async (key, value, expireTime = 3600) => {
   try {
-    console.log("key cached kgf");
+    // console.log("key cached kgf");
 
     await redisClient.set(key, JSON.stringify(value), {
       EX: expireTime,
