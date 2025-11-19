@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   referralCode: { type: String, unique: true },
   amount: {
     type: Number,
-    default: 5,
+    default: 100,
   },
   country: {
     type: String,

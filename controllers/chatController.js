@@ -115,7 +115,7 @@ export const updateVoiceMessage = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
-
+// update text chat
 export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -186,14 +186,17 @@ export const updateTextChat = async (req, res) => {
     );
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
-    console.log(updatedChat);
-    res.status(201).json({ message: "Chat updated", chat: updatedChat });
+    console.log("vhat", updatedChat?.chat[updatedChat.chat.length - 1]);
+    res.status(201).json({
+      message: "Chat updated",
+      newChat: updatedChat?.chat[updatedChat.chat.length - 1],
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error updating chat" });
   }
 };
-
+// get chat messages
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -218,7 +221,7 @@ export const getChatMessages = async (req, res) => {
     res.status(500).json({ error: "Error fetching chat messages" });
   }
 };
-
+// delete chat
 export const deleteChat = async (req, res) => {
   try {
     const { chatId } = req.params;
