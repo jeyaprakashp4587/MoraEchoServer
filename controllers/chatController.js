@@ -186,7 +186,6 @@ export const updateTextChat = async (req, res) => {
     );
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
-    console.log("vhat", updatedChat?.chat[updatedChat.chat.length - 1]);
     res.status(201).json({
       message: "Chat updated",
       newChat: updatedChat?.chat[updatedChat.chat.length - 1],
