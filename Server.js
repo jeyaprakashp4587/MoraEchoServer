@@ -9,6 +9,7 @@ import authRoutes from "./Router/authRoutes.js";
 import bodyParser from "body-parser";
 import chatRoutes from "./Router/chatRoutes.js";
 import coinsRoutes from "./Router/coinsRoutes.js";
+import modelsRoutes from "./Router/modelsRoutes.js";
 import { connectRedis } from "./Redis/redis.js";
 
 app.use(cors({ origin: "*" }));
@@ -27,6 +28,7 @@ app.use("/person", PersonRoutes);
 app.use("/chat", chatRoutes);
 app.use("/auth", authRoutes);
 app.use("/coins", coinsRoutes);
+app.use("/models", modelsRoutes);
 DB1.on("connected", () => {
   console.log("DB1 is connected");
 });
