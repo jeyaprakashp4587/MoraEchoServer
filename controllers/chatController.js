@@ -1,6 +1,5 @@
-// const Chat = require("../models/Chat.js");
+// const Chat = require(
 import Chat from "../models/Chat.js";
-import User from "../models/User.js";
 import { deleteCache, getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
@@ -166,12 +165,16 @@ export const updateTextChat = async (req, res) => {
       };
       await setCache(`cache${chatId}of${req.userId}`, { person: person }, 2000);
     }
-
+    const lastMessages = updatedChat.chat.slice(-10).map((m) => ({
+      role: m.sender === "user" ? "user" : "assistant",
+      content: m.message,
+    }));
     // Generate GPT response
     const aiResponse = await getGPTResponse(
       updatedChat.ChatType,
       person,
-      newMessage
+      newMessage,
+      lastMessages
     );
     // Save GPT message
     const aiMessage = {
