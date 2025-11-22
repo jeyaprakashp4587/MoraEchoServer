@@ -4,6 +4,7 @@ import DB1 from "../DB/DB1.js";
 import dotenv from "dotenv";
 import { getCache, setCache } from "../Redis/redis.js";
 dotenv.config();
+
 const openai = new OpenAI({ apiKey: process.env.GPT_API_KEY });
 
 export const getGPTResponse = async (
@@ -13,23 +14,20 @@ export const getGPTResponse = async (
   historyMessages = []
 ) => {
   try {
-    // Fetch model data
-    const cachedModelData = await getCache("modelData");
-    let modelData = cachedModelData;
-    // console.log(cachedModelData);
+    let modelData = await getCache(`modelData:${chatType}`);
 
-    if (!cachedModelData) {
+    if (!modelData) {
       const doc = await DB1.collection("models").findOne(
         { "models.title": chatType },
         { projection: { "models.$": 1 } }
       );
-      const modelData = doc?.models?.[0];
-      // console.log(modelData);
 
+      modelData = doc?.models?.[0];
       if (!modelData) throw new Error("AI Model not found");
-      await setCache("modelData", modelData, 1000);
+
+      await setCache(`modelData:${chatType}`, modelData, 1000);
     }
-    // Build system prompt
+
     const systemPrompt = fillTemplate(modelData.promptTemplate, {
       name: person.name,
       RelUserName: person.RelUserName,
@@ -48,7 +46,7 @@ export const getGPTResponse = async (
     ];
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: modelData.modelName || "gpt-4o-mini",
       messages,
     });
 

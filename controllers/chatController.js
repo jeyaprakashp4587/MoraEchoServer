@@ -202,17 +202,24 @@ export const updateTextChat = async (req, res) => {
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
+    const { page = 1, limit = 20 } = req.query;
     const chat = await Chat.findOne({
       _id: chatId,
       userId: req.userId,
-    }).populate({
-      path: "personId",
-      select: "name imageUrl",
-    });
+    })
+      .populate({
+        path: "personId",
+        select: "name imageUrl",
+      })
+      .sort({ "chat.createdAt": -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
     if (!chat) {
       return res.status(404).json({ error: "Chat not found" });
     }
+    console.log(chat?.chat);
+
     res.status(200).json({
       message: "Messages fetched successfully",
       messages: chat?.chat,
