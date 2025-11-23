@@ -1,4 +1,3 @@
-// const Chat = require(
 import Chat from "../models/Chat.js";
 import { deleteCache, getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
@@ -13,6 +12,7 @@ export const createChat = async (req, res) => {
       personId,
       ChatType: chatType,
     });
+    console.log(personId, chatType, "creted sucesfuly");
 
     res.status(200).json({ message: "Chat created", newChat: newChat?._id });
   } catch (err) {
@@ -199,37 +199,89 @@ export const updateTextChat = async (req, res) => {
   }
 };
 // get chat messages
+import mongoose from "mongoose";
+
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { page = 1, limit = 20 } = req.query;
-    const chat = await Chat.findOne({
-      _id: chatId,
-      userId: req.userId,
-    })
-      .populate({
-        path: "personId",
-        select: "name imageUrl",
-      })
-      .sort({ "chat.createdAt": -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    const { page = 1, limit = 10, firstImp = true } = req.query;
+    const skip = (page - 1) * parseInt(limit);
+    if (firstImp) {
+      const chatDoc = await Chat.findOne({
+        _id: chatId,
+        userId: req.userId,
+      }).populate("personId", "name imageUrl");
 
-    if (!chat) {
-      return res.status(404).json({ error: "Chat not found" });
+      if (!chatDoc) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+      if (!chatDoc.chat || chatDoc.chat.length === 0) {
+        return res.status(200).json({
+          message: "Chat fetched successfully",
+          messages: [],
+          chatUserData: {
+            name: chatDoc.personId.name,
+            imageUrl: chatDoc.personId.imageUrl,
+          },
+          hasMore: false,
+        });
+      }
     }
-    console.log(chat?.chat);
 
+    const result = await Chat.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(chatId),
+          userId: new mongoose.Types.ObjectId(req.userId),
+        },
+      },
+      { $unwind: "$chat" },
+      { $sort: { "chat.createdAt": -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: "persons",
+          localField: "personId",
+          foreignField: "_id",
+          as: "person",
+        },
+      },
+      { $unwind: "$person" },
+      {
+        $project: {
+          message: "$chat",
+          person: {
+            name: "$person.name",
+            imageUrl: "$person.imageUrl",
+          },
+        },
+      },
+    ]);
+
+    if (!result || result.length === 0) {
+      return res.status(200).json({
+        message: "Messages fetched successfully",
+        messages: [],
+        chatUserData: null,
+        hasMore: false,
+      });
+    }
+    const messages = [...result.map((r) => r.message)].reverse();
+    const chatUserData = result[0].person;
+    const hasMore = result.length === parseInt(limit);
     res.status(200).json({
       message: "Messages fetched successfully",
-      messages: chat?.chat,
-      chatUserData: chat?.personId,
+      messages,
+      chatUserData,
+      hasMore,
     });
   } catch (error) {
     console.error("Error fetching chat messages:", error);
     res.status(500).json({ error: "Error fetching chat messages" });
   }
 };
+
 // delete chat
 export const deleteChat = async (req, res) => {
   try {

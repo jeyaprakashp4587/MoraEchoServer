@@ -4,8 +4,6 @@ export const getModels = async (req, res) => {
   try {
     const collection = await DB1.collection("models");
     const models = await collection.find({}).toArray();
-    console.log(models);
-
     return res.status(200).json({ models: models[0].models });
   } catch (error) {
     console.error("Error fetching models:", error);
