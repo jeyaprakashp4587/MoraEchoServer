@@ -14,8 +14,9 @@ export const getGPTResponse = async (
   historyMessages = []
 ) => {
   try {
-    let modelData = await getCache(`modelData:${chatType}`);
+    console.log(chatType);
 
+    let modelData = await getCache(`modelData:${chatType}`);
     if (!modelData) {
       const doc = await DB1.collection("models").findOne(
         { "models.title": chatType },
@@ -23,6 +24,8 @@ export const getGPTResponse = async (
       );
 
       modelData = doc?.models?.[0];
+      console.log(modelData);
+
       if (!modelData) throw new Error("AI Model not found");
 
       await setCache(`modelData:${chatType}`, modelData, 1000);

@@ -25,14 +25,13 @@ const chatSchema = new mongoose.Schema(
     chat: [
       {
         sender: {
-          type: String, // "user" or "ai"
+          type: String,
           required: true,
         },
         message: {
           type: String,
-          // required: true,
         },
-        audioUrl: String, // optional: cloned or recorded voice
+        audioUrl: String,
         createdAt: {
           type: Date,
           default: Date.now,
