@@ -24,12 +24,12 @@ export const createChat = async (req, res) => {
 export const getAllChatsList = async (req, res) => {
   try {
     const cachedChats = await getCache(`chats${req.userId}`);
-    if (cachedChats) {
-      return res.status(200).json({
-        message: "Chats fetched successfully",
-        chats: cachedChats,
-      });
-    }
+    // if (cachedChats) {
+    //   return res.status(200).json({
+    //     message: "Chats fetched successfully",
+    //     chats: cachedChats,
+    //   });
+    // }
     const chats = await Chat.find({ userId: req.userId }, { chat: 0 })
       .populate({
         path: "personId",
