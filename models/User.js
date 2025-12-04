@@ -32,6 +32,46 @@ const userSchema = new mongoose.Schema({
   country: {
     type: String,
   },
+  goals: [
+    {
+      goalTitle: String,
+      goalStreak: {
+        type: Number,
+        default: 0,
+      },
+      goalTodos: [
+        {
+          todoName: String,
+          completed: {
+            type: Boolean,
+            default: false,
+          },
+        },
+      ],
+      isToday: {
+        type: Boolean,
+        default: false,
+      },
+      lastCheckedDate: {
+        type: String,
+        default: null,
+      },
+      streakRewardPending: {
+        type: Boolean,
+        default: false,
+      },
+      completionHistory: [
+        {
+          date: String,
+          completed: Boolean,
+        },
+      ],
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
