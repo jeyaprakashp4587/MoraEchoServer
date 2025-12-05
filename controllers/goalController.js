@@ -3,28 +3,28 @@ import User from "../models/User.js";
 // Helper function to get today's date string (YYYY-MM-DD)
 const getTodayDateString = () => {
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  return today.toISOString().split("T")[0];
 };
 
 // Helper function to check and reset todos for new day
 const checkAndResetTodos = (goal) => {
   const today = getTodayDateString();
-  
+
   // If lastCheckedDate is null or different from today, reset todos
   if (!goal.lastCheckedDate || goal.lastCheckedDate !== today) {
     // Check if yesterday was completed
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
+    const yesterdayStr = yesterday.toISOString().split("T")[0];
+
     const yesterdayRecord = goal.completionHistory?.find(
-      h => h.date === yesterdayStr && h.completed === true
+      (h) => h.date === yesterdayStr && h.completed === true
     );
-    
+
     if (yesterdayRecord) {
       // Increment streak if yesterday was completed
       const newStreak = (goal.goalStreak || 0) + 1;
-      
+
       // If streak reaches 7, reset to 0 and mark for 100 coins reward
       if (newStreak >= 7) {
         goal.goalStreak = 0;
@@ -36,16 +36,16 @@ const checkAndResetTodos = (goal) => {
       // Reset streak if missed a day
       goal.goalStreak = 0;
     }
-    
+
     // Reset all todos for new day
-    goal.goalTodos.forEach(todo => {
+    goal.goalTodos.forEach((todo) => {
       todo.completed = false;
     });
-    
+
     goal.isToday = true;
     goal.lastCheckedDate = today;
   }
-  
+
   return goal;
 };
 
@@ -105,14 +105,14 @@ export const getGoals = async (req, res) => {
     }
 
     // Check and reset todos for each goal if it's a new day
-    const updatedGoals = user.goals.map(goal => {
+    const updatedGoals = user.goals.map((goal) => {
       return checkAndResetTodos(goal);
     });
 
     // Save if any goals were updated
     let needsSave = false;
     let streakRewardAwarded = false;
-    
+
     user.goals.forEach((goal, index) => {
       if (goal.lastCheckedDate !== updatedGoals[index].lastCheckedDate) {
         goal.goalStreak = updatedGoals[index].goalStreak;
@@ -142,7 +142,9 @@ export const completeTodo = async (req, res) => {
     const { goalId, todoIndex } = req.body;
 
     if (!goalId || todoIndex === undefined) {
-      return res.status(400).json({ error: "Goal ID and todo index are required" });
+      return res
+        .status(400)
+        .json({ error: "Goal ID and todo index are required" });
     }
 
     const user = await User.findById(req.userId);
@@ -171,26 +173,28 @@ export const completeTodo = async (req, res) => {
     todo.completed = true;
 
     // Add 10 coins reward
-    user.amount = (user.amount || 0) + 10;
+    user.amount = (user.amount || 0) + 5;
 
     // Check if all todos are completed
-    const allCompleted = goal.goalTodos.every(t => t.completed);
+    const allCompleted = goal.goalTodos.every((t) => t.completed);
     const today = getTodayDateString();
 
     if (allCompleted) {
       // Update completion history
-      const existingRecord = goal.completionHistory?.find(h => h.date === today);
-      
+      const existingRecord = goal.completionHistory?.find(
+        (h) => h.date === today
+      );
+
       // Only increment streak if today wasn't already marked as completed
       if (!existingRecord) {
         if (!goal.completionHistory) {
           goal.completionHistory = [];
         }
         goal.completionHistory.push({ date: today, completed: true });
-        
+
         // Increment streak immediately when all todos are completed today
         const newStreak = (goal.goalStreak || 0) + 1;
-        
+
         // If streak reaches 7, reset to 0 and add 100 coins reward
         if (newStreak >= 7) {
           goal.goalStreak = 0;
@@ -201,10 +205,10 @@ export const completeTodo = async (req, res) => {
       } else if (existingRecord && !existingRecord.completed) {
         // If record exists but wasn't completed, mark it as completed now
         existingRecord.completed = true;
-        
+
         // Increment streak since this is the first time completing today
         const newStreak = (goal.goalStreak || 0) + 1;
-        
+
         // If streak reaches 7, reset to 0 and add 100 coins reward
         if (newStreak >= 7) {
           goal.goalStreak = 0;
@@ -221,7 +225,7 @@ export const completeTodo = async (req, res) => {
       message: "Todo completed successfully",
       goal: goal,
       allCompleted: allCompleted,
-      coinsReward: 10,
+      coinsReward: 5,
       newAmount: user.amount,
     });
   } catch (error) {
@@ -265,7 +269,9 @@ export const deleteTodo = async (req, res) => {
     const { goalId, todoIndex } = req.body;
 
     if (!goalId || todoIndex === undefined) {
-      return res.status(400).json({ error: "Goal ID and todo index are required" });
+      return res
+        .status(400)
+        .json({ error: "Goal ID and todo index are required" });
     }
 
     const user = await User.findById(req.userId);
@@ -283,7 +289,9 @@ export const deleteTodo = async (req, res) => {
     }
 
     if (goal.goalTodos.length <= 1) {
-      return res.status(400).json({ error: "Cannot delete the last todo. Delete the goal instead." });
+      return res.status(400).json({
+        error: "Cannot delete the last todo. Delete the goal instead.",
+      });
     }
 
     goal.goalTodos.splice(todoIndex, 1);
@@ -304,7 +312,9 @@ export const addTodoToGoal = async (req, res) => {
     const { goalId, todoName } = req.body;
 
     if (!goalId || !todoName || !todoName.trim()) {
-      return res.status(400).json({ error: "Goal ID and todo name are required" });
+      return res
+        .status(400)
+        .json({ error: "Goal ID and todo name are required" });
     }
 
     const user = await User.findById(req.userId);

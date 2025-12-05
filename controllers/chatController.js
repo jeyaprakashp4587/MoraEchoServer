@@ -118,7 +118,8 @@ export const updateVoiceMessage = async (req, res) => {
 export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { newMessage } = req.body;
+    const { newMessage, shouldRemaindGoal } = req.body;
+    console.log(newMessage, shouldRemaindGoal);
     // Save user message first
     const userMessage = {
       sender: "user",
