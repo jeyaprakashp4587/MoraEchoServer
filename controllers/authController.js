@@ -13,8 +13,6 @@ export const registerUser = async (req, res) => {
       email: email.toLowerCase().trim(),
     });
     if (existingUser) {
-      // console.log("login isse");
-
       return res.status(400).json({ message: "Email already registered" });
     }
 
@@ -30,7 +28,7 @@ export const registerUser = async (req, res) => {
     if (referralCode) {
       findReferredUser = await User.findOneAndUpdate(
         { referralCode: referralCode },
-        { $inc: { amount: 5 } }
+        { $inc: { amount: 150 } }
       );
       if (!findReferredUser) {
         return res.status(404).json({ error: "wrong referral code" });
@@ -43,14 +41,12 @@ export const registerUser = async (req, res) => {
       referralCode: code,
       country,
       language,
-      amount: findReferredUser ? 15 : 10,
+      amount: findReferredUser ? 100 : 50,
     });
     const accessToken = await createAccessToken(newUser._id);
     const refreshToken = await createRefreshToken(newUser._id);
-    // console.log(newUser, accessToken, refreshToken);
-
     res.status(201).json({
-      message: "User registered successfully",
+      message: "Register succesfully",
       user: {
         id: newUser._id,
         name: newUser.name,

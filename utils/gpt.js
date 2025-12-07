@@ -11,10 +11,11 @@ export const getGPTResponse = async (
   chatType = "Mora",
   person,
   newMessage,
-  historyMessages = []
+  historyMessages = [],
+  RemaindGoal
 ) => {
   try {
-    console.log(chatType);
+    // console.log();
 
     let modelData = await getCache(`modelData:${chatType}`);
     if (!modelData) {
@@ -24,8 +25,6 @@ export const getGPTResponse = async (
       );
 
       modelData = doc?.models?.[0];
-      console.log(modelData);
-
       if (!modelData) throw new Error("AI Model not found");
 
       await setCache(`modelData:${chatType}`, modelData, 1000);
@@ -42,10 +41,12 @@ export const getGPTResponse = async (
       .replace(/\s+/g, " ")
       .trim();
 
+    let goalRemainMsg = `this user forget to complete thier todo, ${RemaindGoal?.todoName}, pls remaind,`;
     const messages = [
       { role: "system", content: systemPrompt },
       ...historyMessages,
       { role: "user", content: newMessage },
+      { role: "system", content: goalRemainMsg },
     ];
 
     const completion = await openai.chat.completions.create({
