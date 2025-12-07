@@ -1,4 +1,5 @@
 import Chat from "../models/Chat.js";
+import User from "../models/User.js";
 import { deleteCache, getCache, setCache } from "../Redis/redis.js";
 import { getGPTResponse } from "../utils/gpt.js";
 import { VoiceChatWithPerson } from "../utils/voiceChat.js";
@@ -12,7 +13,6 @@ export const createChat = async (req, res) => {
       personId,
       ChatType: chatType,
     });
-    console.log(personId, chatType, "creted sucesfuly");
 
     res.status(200).json({ message: "Chat created", newChat: newChat?._id });
   } catch (err) {
@@ -119,7 +119,7 @@ export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
     const { newMessage, shouldRemaindGoal } = req.body;
-    console.log(newMessage, shouldRemaindGoal);
+    // console.log(shouldRemaindGoal);
     // Save user message first
     const userMessage = {
       sender: "user",
@@ -170,12 +170,41 @@ export const updateTextChat = async (req, res) => {
       role: m.sender === "user" ? "user" : "assistant",
       content: m.message,
     }));
+    // if should Remain goal then get user missed goal
+    const missedGoalTodoDetails = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.userId),
+        },
+      },
+      {
+        $unwind: "$goals",
+      },
+      {
+        $project: {
+          missedGoals: {
+            $filter: {
+              input: "$goals.goalTodos",
+              as: "todo",
+              cond: {
+                $eq: ["$$todo.completed", false],
+              },
+            },
+          },
+        },
+      },
+    ]).exec();
+    console.log(missedGoalTodoDetails[0].missedGoals);
+
     // Generate GPT response
     const aiResponse = await getGPTResponse(
       updatedChat.ChatType,
       person,
       newMessage,
-      lastMessages
+      lastMessages,
+      (remaindGoal = shouldRemaindGoal
+        ? missedGoalTodoDetails[0].missedGoals[0]
+        : null)
     );
     // Save GPT message
     const aiMessage = {
