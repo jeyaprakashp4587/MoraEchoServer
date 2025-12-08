@@ -15,8 +15,6 @@ export const getGPTResponse = async (
   RemaindGoal
 ) => {
   try {
-    // console.log();
-
     let modelData = await getCache(`modelData:${chatType}`);
     if (!modelData) {
       const doc = await DB1.collection("models").findOne(

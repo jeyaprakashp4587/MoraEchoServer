@@ -118,8 +118,7 @@ export const updateVoiceMessage = async (req, res) => {
 export const updateTextChat = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { newMessage, shouldRemaindGoal } = req.body;
-    // console.log(shouldRemaindGoal);
+    const { newMessage } = req.body;
     // Save user message first
     const userMessage = {
       sender: "user",
@@ -170,7 +169,8 @@ export const updateTextChat = async (req, res) => {
       role: m.sender === "user" ? "user" : "assistant",
       content: m.message,
     }));
-    // if should Remain goal then get user missed goal
+    // if should Remain goal then get user missed goal, and set cache in redis,
+    let checkGoalIsMissed = await getCache(`${req.userId}missedGoal`);
     const missedGoalTodoDetails = await User.aggregate([
       {
         $match: {
@@ -195,16 +195,18 @@ export const updateTextChat = async (req, res) => {
       },
     ]).exec();
     console.log(missedGoalTodoDetails[0].missedGoals);
-
     // Generate GPT response
+    console.log(shouldRemaindGoal);
+
+    const remaindGoal = shouldRemaindGoal
+      ? missedGoalTodoDetails[0].missedGoals[0]
+      : null;
     const aiResponse = await getGPTResponse(
       updatedChat.ChatType,
       person,
       newMessage,
       lastMessages,
-      (remaindGoal = shouldRemaindGoal
-        ? missedGoalTodoDetails[0].missedGoals[0]
-        : null)
+      remaindGoal
     );
     // Save GPT message
     const aiMessage = {
