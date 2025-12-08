@@ -171,34 +171,36 @@ export const updateTextChat = async (req, res) => {
     }));
     // if should Remain goal then get user missed goal, and set cache in redis,
     let checkGoalIsMissed = await getCache(`${req.userId}missedGoal`);
-    const missedGoalTodoDetails = await User.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(req.userId),
+    let missedGoalTodoDetails;
+    if (!checkGoalIsMissed) {
+      missedGoalTodoDetails = await User.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(req.userId),
+          },
         },
-      },
-      {
-        $unwind: "$goals",
-      },
-      {
-        $project: {
-          missedGoals: {
-            $filter: {
-              input: "$goals.goalTodos",
-              as: "todo",
-              cond: {
-                $eq: ["$$todo.completed", false],
+        {
+          $unwind: "$goals",
+        },
+        {
+          $project: {
+            missedGoals: {
+              $filter: {
+                input: "$goals.goalTodos",
+                as: "todo",
+                cond: {
+                  $eq: ["$$todo.completed", false],
+                },
               },
             },
           },
         },
-      },
-    ]).exec();
-    console.log(missedGoalTodoDetails[0].missedGoals);
+      ]).exec();
+      // set missed goal in cache ,skip for 5 minutes,
+      await setCache(`${req.userId}missedGoal`, true);
+    }
     // Generate GPT response
-    console.log(shouldRemaindGoal);
-
-    const remaindGoal = shouldRemaindGoal
+    const remaindGoal = !checkGoalIsMissed
       ? missedGoalTodoDetails[0].missedGoals[0]
       : null;
     const aiResponse = await getGPTResponse(

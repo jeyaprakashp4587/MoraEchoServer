@@ -38,14 +38,16 @@ export const getGPTResponse = async (
     })
       .replace(/\s+/g, " ")
       .trim();
-
-    let goalRemainMsg = `this user forget to complete thier todo, ${RemaindGoal?.todoName}, pls remaind,`;
     const messages = [
       { role: "system", content: systemPrompt },
       ...historyMessages,
       { role: "user", content: newMessage },
-      { role: "system", content: goalRemainMsg },
     ];
+
+    if (RemaindGoal) {
+      const goalRemainMsg = `This user forgot to complete their todo: ${RemaindGoal.todoName}. Please remind them.`;
+      messages.push({ role: "system", content: goalRemainMsg });
+    }
 
     const completion = await openai.chat.completions.create({
       model: modelData.modelName || "gpt-4o-mini",
