@@ -148,11 +148,12 @@ export const updateTextChat = async (req, res) => {
         behavior: cachedPersonData.person?.behavior || "kind, warm, and caring",
         language: cachedPersonData.person?.language || "English",
         RelUserName: req.user.name || "User",
+        MemoryStory: cachedPersonData.person?.MemoryStory || null,
       };
     } else {
       const personData = await Chat.findById(chatId).populate({
         path: "personId",
-        select: "name relation behavior language voiceId",
+        select: "name relation behavior language voiceId MemoryStory",
       });
 
       person = {
@@ -161,6 +162,7 @@ export const updateTextChat = async (req, res) => {
         behavior: personData.personId?.behavior || "kind, warm, and caring",
         language: personData.personId?.language || "English",
         RelUserName: req.user.name || "User",
+        MemoryStory: personData.personId?.MemoryStory || null,
         // voiceId: personData.personId?.voiceId,
       };
       await setCache(`cache${chatId}of${req.userId}`, { person: person }, 2000);

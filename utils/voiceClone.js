@@ -14,7 +14,6 @@ cloudinary.config({
 
 export const cloneVoice = async (text, voiceId) => {
   try {
-    // 1️⃣ Generate speech from ElevenLabs
     const response = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
@@ -34,20 +33,16 @@ export const cloneVoice = async (text, voiceId) => {
       }
     );
 
-    // 2️⃣ Save temporarily
     const tempFilePath = `./temp/output_${Date.now()}.mp3`;
     fs.writeFileSync(tempFilePath, response.data);
 
-    // 3️⃣ Upload to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-      resource_type: "video", // Cloudinary treats audio as video for upload
-      folder: "ME GeneratedPersonVoices", // optional folder
+      resource_type: "video",
+      folder: "ME GeneratedPersonVoices",
     });
 
-    // 4️⃣ Delete temp file
     fs.unlinkSync(tempFilePath);
 
-    // 5️⃣ Return hosted Cloudinary URL
     return uploadResult.secure_url;
   } catch (error) {
     return { msg: "error on generate" };
