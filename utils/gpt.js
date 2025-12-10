@@ -16,7 +16,7 @@ export const getGPTResponse = async (
 ) => {
   try {
     let modelData = await getCache(`modelData:${chatType}`);
-    if (modelData) {
+    if (!modelData) {
       const doc = await DB1.collection("models").findOne(
         { "models.title": chatType },
         { projection: { "models.$": 1 } }
@@ -31,7 +31,8 @@ export const getGPTResponse = async (
     if (person.MemoryStory && person.MemoryStory.trim() !== "") {
       memoryPart = `Their story: ${person.MemoryStory}`;
     }
-    const systemPrompt = fillTemplate(modelData.promptTemplate, {
+
+    const systemPrompt = fillTemplate(modelData?.promptTemplate, {
       name: person.name,
       RelUserName: person.RelUserName,
       relation: person.relation,
@@ -42,7 +43,6 @@ export const getGPTResponse = async (
     })
       .replace(/\s+/g, " ")
       .trim();
-    console.log(systemPrompt);
 
     const messages = [
       { role: "system", content: systemPrompt },
