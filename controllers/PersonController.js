@@ -9,7 +9,7 @@ import FormData from "form-data";
 import { deleteCache } from "../Redis/redis.js";
 export const createPerson = async (req, res) => {
   try {
-    const { name, relation, behavior, language, imageUrl, voiceSampleUrl } =
+    const { name, relation, behavior, language, imageUrl, voiceSampleUrl, memoryStory } =
       req.body.data;
 
     // host the voice and send to eleven labs
@@ -50,6 +50,7 @@ export const createPerson = async (req, res) => {
       language,
       imageUrl,
       voiceSampleUrl,
+      MemoryStory: memoryStory || '',
       // voiceId,
     });
 
