@@ -163,7 +163,6 @@ export const updateTextChat = async (req, res) => {
         language: personData.personId?.language || "English",
         RelUserName: req.user.name || "User",
         MemoryStory: personData.personId?.MemoryStory || null,
-        // voiceId: personData.personId?.voiceId,
       };
       await setCache(`cache${chatId}of${req.userId}`, { person: person }, 2000);
     }
@@ -171,46 +170,14 @@ export const updateTextChat = async (req, res) => {
       role: m.sender === "user" ? "user" : "assistant",
       content: m.message,
     }));
-    // if should Remain goal then get user missed goal, and set cache in redis,
-    let checkGoalIsMissed = await getCache(`${req.userId}missedGoal`);
-    let missedGoalTodoDetails;
-    if (!checkGoalIsMissed) {
-      missedGoalTodoDetails = await User.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(req.userId),
-          },
-        },
-        {
-          $unwind: "$goals",
-        },
-        {
-          $project: {
-            missedGoals: {
-              $filter: {
-                input: "$goals.goalTodos",
-                as: "todo",
-                cond: {
-                  $eq: ["$$todo.completed", false],
-                },
-              },
-            },
-          },
-        },
-      ]).exec();
-      // set missed goal in cache ,skip for 5 minutes,
-      await setCache(`${req.userId}missedGoal`, true);
-    }
+
     // Generate GPT response
-    const remaindGoal = !checkGoalIsMissed
-      ? missedGoalTodoDetails[0].missedGoals[0]
-      : null;
+
     const aiResponse = await getGPTResponse(
       updatedChat.ChatType,
       person,
       newMessage,
-      lastMessages,
-      remaindGoal
+      lastMessages
     );
     // Save GPT message
     const aiMessage = {
