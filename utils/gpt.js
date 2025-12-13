@@ -11,8 +11,7 @@ export const getGPTResponse = async (
   chatType = "Mora",
   person,
   newMessage,
-  historyMessages = [],
-  RemaindGoal
+  historyMessages = []
 ) => {
   try {
     let modelData = await getCache(`modelData:${chatType}`);
@@ -49,11 +48,6 @@ export const getGPTResponse = async (
       ...historyMessages,
       { role: "user", content: newMessage },
     ];
-
-    if (RemaindGoal) {
-      const goalRemainMsg = `This user forgot to complete their todo: ${RemaindGoal.todoName}. Please remind them.`;
-      messages.push({ role: "system", content: goalRemainMsg });
-    }
 
     const completion = await openai.chat.completions.create({
       model: modelData.modelName || "gpt-4o-mini",
