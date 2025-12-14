@@ -1,8 +1,7 @@
 import Chat from "../models/Chat.js";
-import User from "../models/User.js";
 import { deleteCache, getCache, setCache } from "../Redis/redis.js";
-import { getGPTResponse } from "../utils/gpt.js";
-import { VoiceChatWithPerson } from "../utils/voiceChat.js";
+import { getGPTResponse } from "../helpers/gpt.js";
+import { VoiceChatWithPerson } from "../helpers/voiceChat.js";
 // create new chat
 export const createChat = async (req, res) => {
   try {
