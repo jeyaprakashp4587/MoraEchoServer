@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import generateReferralCode from "../utils/generateReferralCode.js";
+import generateReferralCode from "../helpers/generateReferralCode.js";
 import { createAccessToken, createRefreshToken } from "../Middleware/JWT.js";
 
 export const registerUser = async (req, res) => {

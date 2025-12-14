@@ -1,16 +1,18 @@
-// controllers/passedOneController.js
-// const axios = require("axios");
-// const User = require("../models/User");
 import User from "../models/User.js";
-// const Person = require("../models/Person");
 import Person from "../models/Person.js";
-import axios from "axios";
-import FormData from "form-data";
 import { deleteCache } from "../Redis/redis.js";
+
 export const createPerson = async (req, res) => {
   try {
-    const { name, relation, behavior, language, imageUrl, voiceSampleUrl, memoryStory } =
-      req.body.data;
+    const {
+      name,
+      relation,
+      behavior,
+      language,
+      imageUrl,
+      voiceSampleUrl,
+      memoryStory,
+    } = req.body.data;
 
     // host the voice and send to eleven labs
 
@@ -50,7 +52,7 @@ export const createPerson = async (req, res) => {
       language,
       imageUrl,
       voiceSampleUrl,
-      MemoryStory: memoryStory || '',
+      MemoryStory: memoryStory || "",
       // voiceId,
     });
 
