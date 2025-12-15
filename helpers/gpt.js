@@ -4,6 +4,7 @@ import DB1 from "../DB/DB1.js";
 import dotenv from "dotenv";
 import { getCache, setCache } from "../Redis/redis.js";
 dotenv.config();
+console.log(process.env.GPT_API_KEY);
 
 const openai = new OpenAI({ apiKey: process.env.GPT_API_KEY });
 
