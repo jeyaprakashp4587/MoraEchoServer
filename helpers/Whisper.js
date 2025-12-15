@@ -5,7 +5,7 @@ import OpenAI, { toFile } from "openai";
 dotenv.config();
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.GPT_API_KEY,
 });
 
 const speechToText = async (audioUrl) => {
