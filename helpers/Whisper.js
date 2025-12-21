@@ -10,17 +10,16 @@ const openai = new OpenAI({
 
 const speechToText = async (audioUrl) => {
   try {
-    // 1️⃣ Download audio as buffer
+    // Download audio  buffer
     const audioResponse = await axios.get(audioUrl, {
       responseType: "arraybuffer",
     });
 
     const audioBuffer = Buffer.from(audioResponse.data);
 
-    // 2️⃣ Convert buffer → File (in memory)
     const audioFile = await toFile(audioBuffer, "audio.mp3");
 
-    // 3️⃣ Transcribe
+    // transcribe
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "gpt-4o-mini-transcribe",
