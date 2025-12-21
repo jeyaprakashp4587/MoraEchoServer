@@ -1,6 +1,6 @@
 import speechToText from "./Whisper.js";
 import { getGPTResponse } from "./gpt.js";
-import { cloneVoice } from "./voiceClone.js";
+import { cloneVoice } from "./Elevenlabs.js";
 
 export const VoiceChatWithPerson = async (chatType, person, audioUrl) => {
   try {
