@@ -124,6 +124,7 @@ export const updateTextChat = async (req, res) => {
       message: newMessage,
       audioUrl: null,
     };
+
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
