@@ -50,6 +50,8 @@ export const getAllChatsList = async (req, res) => {
 export const updateVoiceMessage = async (req, res) => {
   const { chatId } = req.params;
   const { newVoice } = req.body;
+  console.log("chat + voice", chatId, newVoice);
+
   const userVoice = {
     sender: "user",
     message: null,
@@ -64,9 +66,8 @@ export const updateVoiceMessage = async (req, res) => {
 
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
     let person = {};
-    if (cachedPersonData) {
+    if (!cachedPersonData) {
       // console.log("redis cached", cachedPersonData);
-
       person = {
         name: cachedPersonData.personId?.name || "Unknown",
         relation: cachedPersonData.personId?.relation || "someone close",
@@ -80,7 +81,6 @@ export const updateVoiceMessage = async (req, res) => {
         path: "personId",
         select: "name relation behavior language voiceId",
       });
-
       person = {
         name: personData.personId?.name || "Unknown",
         relation: personData.personId?.relation || "someone close",
@@ -94,8 +94,8 @@ export const updateVoiceMessage = async (req, res) => {
     // create person voice
     const personVoiceUrl = await VoiceChatWithPerson(
       updateVoiceChat.ChatType,
-      newVoice,
-      person
+      person,
+      newVoice
     ).catch((err) => {
       return res.status(503).json({ error: "error on generate voice" });
     });

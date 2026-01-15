@@ -5,14 +5,12 @@ import { cloneVoice } from "./Elevenlabs.js";
 export const VoiceChatWithPerson = async (chatType, person, audioUrl) => {
   try {
     //  extract speen to text
-    const userText = await speechToText(audioUrl);
-
+    // const userText = await speechToText(audioUrl);
     //  get gpt resonse
-    const aiResponse = await getGPTResponse(chatType, person, userText);
-
+    // const aiResponse = await getGPTResponse(chatType, person, userText);
     // clone voice
-    const clonedVoiceUrl = await cloneVoice(aiResponse, person?.voiceId);
-    return { audioUrl: clonedVoiceUrl };
+    // const clonedVoiceUrl = await cloneVoice(aiResponse, person?.voiceId);
+    // return { audioUrl: clonedVoiceUrl };
   } catch (error) {
     console.error(error);
     return { msg: "error on generate voice" };

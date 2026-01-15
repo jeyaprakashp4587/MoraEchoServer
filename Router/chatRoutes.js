@@ -6,13 +6,15 @@ import {
   updateTextChat,
   getAllChatsList,
   getChatMessages,
+  updateVoiceMessage,
 } from "../controllers/chatController.js";
 import { verifyToken } from "../Middleware/JWT.js";
 
 router.use(verifyToken);
 router.post("/create", createChat);
 router.get("/getMessages/:chatId", getChatMessages);
-router.put("/update/:chatId", updateTextChat);
+router.put("/updateChatMessage/:chatId", updateTextChat);
+router.post("/updateChatVoice/:chatId", updateVoiceMessage);
 router.delete("/delete/:chatId", deleteChat);
 router.get("/getAllChatsList", getAllChatsList);
 
