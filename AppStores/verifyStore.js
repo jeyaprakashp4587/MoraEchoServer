@@ -1,7 +1,14 @@
 import { google } from "googleapis";
 
 const auth = new google.auth.GoogleAuth({
-  credentials: require("../serviceFiles/serviceaccount.json"),
+  credentials: {
+    type: process.env.type,
+    project_id: process.env.project_id,
+    private_key_id: process.env.private_key_id,
+    client_email: process.env.client_email,
+    client_id: process.env.client_id,
+    private_key: process.env.process_key?.replace(/\\n/g, "\n"),
+  },
   scopes: ["https://www.googleapis.com/auth/androidpublisher"],
 });
 
