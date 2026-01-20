@@ -1,24 +1,43 @@
 import { google } from "googleapis";
-import axios from "axios";
 
-const androidPublisher = google.androidpublisher("v3");
+const auth = new google.auth.GoogleAuth({
+  credentials: require("../serviceFiles/serviceaccount.json"),
+  scopes: ["https://www.googleapis.com/auth/androidpublisher"],
+});
 
-export async function verifyAndroidPurchase(receipt, productId) {
-  const packageName = "com.moraecho";
-  const purchaseToken = receipt.purchaseToken;
+const androidpublisher = google.androidpublisher({
+  version: "v3",
+  auth,
+});
 
-  const authClient = await google.auth.getClient({
-    scopes: ["https://www.googleapis.com/auth/androidpublisher"],
-  });
-
-  const res = await androidPublisher.purchases.products.get({
-    auth: authClient,
+export async function verifyAndroidSubscription({
+  packageName,
+  productId,
+  purchaseToken,
+}) {
+  const res = await androidpublisher.purchases.subscriptions.get({
     packageName,
-    productId,
+    subscriptionId: productId,
     token: purchaseToken,
   });
 
-  return res.data;
+  const data = res.data;
+
+  if (data.paymentState !== 1) {
+    throw new Error("Payment not completed");
+  }
+
+  if (Date.now() > Number(data.expiryTimeMillis)) {
+    throw new Error("Subscription expired");
+  }
+
+  return {
+    startDate: new Date(Number(data.startTimeMillis)),
+    expiryDate: new Date(Number(data.expiryTimeMillis)),
+    autoRenew: data.autoRenewing,
+    basePlanId: data.basePlanId || null,
+    raw: data,
+  };
 }
 
 export async function verifyIosPurchase(receiptData) {

@@ -25,55 +25,25 @@ const userSchema = new mongoose.Schema({
     },
   ],
   referralCode: { type: String, unique: true },
-  amount: {
-    type: Number,
-    default: 50,
-  },
   country: {
     type: String,
-  },
-  goals: {
-    goalTitle: String,
-    goalStreak: {
-      type: Number,
-      default: 0,
-    },
-    goalTodos: [
-      {
-        todoName: String,
-        completed: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
-    streakRewardPending: {
-      type: Boolean,
-      default: false,
-    },
-    isToday: {
-      type: Boolean,
-      default: false,
-    },
-    lastCheckedDate: {
-      type: String,
-      default: null,
-    },
-
-    completionHistory: [
-      {
-        date: String,
-        completed: Boolean,
-      },
-    ],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  subscription: {
+    planId: { type: String },
+    basePlanId: { type: String },
+    purchaseToken: { type: String },
+    startDate: { type: Date },
+    expiryDate: { type: Date },
+    autoRenew: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["active", "expired", "cancelled", "pending"],
+      default: "pending",
+    },
   },
 });
 
