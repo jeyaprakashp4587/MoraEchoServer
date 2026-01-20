@@ -2,6 +2,7 @@
 node_modules/
 
 # env files
+serviceFiles/serviceaccount.json
 .env
 .env.*
 
