@@ -29,25 +29,28 @@ export async function verifyAndroidSubscription({
   });
 
   const data = res.data;
+  const now = Date.now();
 
-  if (data.paymentState !== 1) {
-    throw new Error("Payment not completed");
+  const expiryTime = Number(data.expiryTimeMillis);
+  if (!expiryTime || now > expiryTime) {
+    throw new Error("SUBSCRIPTION_EXPIRED");
+    return;
   }
 
-  if (Date.now() > Number(data.expiryTimeMillis)) {
-    throw new Error("Subscription expired");
+  if (![1, 2].includes(data.paymentState)) {
+    throw new Error("PAYMENT_NOT_COMPLETED");
+    return;
   }
 
   return {
     startDate: new Date(Number(data.startTimeMillis)),
-    expiryDate: new Date(Number(data.expiryTimeMillis)),
-    autoRenew: data.autoRenewing,
-    basePlanId: data.basePlanId || null,
+    expiryDate: new Date(expiryTime),
+    autoRenew: Boolean(data.autoRenewing),
     raw: data,
   };
 }
 
-export async function verifyIosPurchase(receiptData) {
+export async function verifyIosPurchase({ receiptData }) {
   const endpoint = "https://buy.itunes.apple.com/verifyReceipt";
   const res = await axios.post(endpoint, {
     "receipt-data": receiptData,
