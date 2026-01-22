@@ -12,7 +12,7 @@ export const createPerson = async (req, res) => {
       imageUrl,
       voiceSampleUrl,
       memoryStory,
-    } = req.body.data;
+    } = req.body;
 
     // host the voice and send to eleven labs
 
@@ -63,7 +63,7 @@ export const createPerson = async (req, res) => {
         $push: { persons: newPerson._id },
       },
 
-      { new: true }
+      { new: true },
     );
     await deleteCache(`chats${req.userId}`);
     res.json({

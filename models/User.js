@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isSubscriped: { type: Boolean, default: false },
   subscription: {
     planId: { type: String },
     basePlanId: { type: String },
