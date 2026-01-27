@@ -32,7 +32,7 @@ export const getAllChatsList = async (req, res) => {
     const chats = await Chat.find({ userId: req.userId }, { chat: 0 })
       .populate({
         path: "personId",
-        select: "name imageUrl",
+        select: "name imageUrl relation",
       })
       .sort({ updatedAt: -1 });
     // console.log(chats);
@@ -50,7 +50,6 @@ export const getAllChatsList = async (req, res) => {
 export const updateVoiceMessage = async (req, res) => {
   const { chatId } = req.params;
   const { newVoice } = req.body;
-  console.log("chat + voice", chatId, newVoice);
 
   const userVoice = {
     sender: "user",
@@ -61,7 +60,7 @@ export const updateVoiceMessage = async (req, res) => {
     const updateVoiceChat = await Chat.findByIdAndUpdate(
       chatId,
       { $push: { chat: userVoice } },
-      { new: true }
+      { new: true },
     );
 
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
@@ -95,7 +94,7 @@ export const updateVoiceMessage = async (req, res) => {
     const personVoiceUrl = await VoiceChatWithPerson(
       updateVoiceChat.ChatType,
       person,
-      newVoice
+      newVoice,
     ).catch((err) => {
       return res.status(503).json({ error: "error on generate voice" });
     });
@@ -136,7 +135,7 @@ export const updateTextChat = async (req, res) => {
           },
         },
       },
-      { new: true }
+      { new: true },
     );
     // getPsersonData by user chat
     const cachedPersonData = await getCache(`cache${chatId}of${req.userId}`);
@@ -177,7 +176,7 @@ export const updateTextChat = async (req, res) => {
       updatedChat.ChatType,
       person,
       newMessage,
-      lastMessages
+      lastMessages,
     );
     // Save GPT message
     const aiMessage = {
@@ -188,7 +187,7 @@ export const updateTextChat = async (req, res) => {
     await Chat.findByIdAndUpdate(
       chatId,
       { updatedAt: Date.now() },
-      { new: true }
+      { new: true },
     );
     updatedChat?.chat.push(aiMessage);
     await updatedChat?.save();
