@@ -206,29 +206,8 @@ import mongoose from "mongoose";
 export const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { page = 1, limit = 10, firstImp = true } = req.query;
+    const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * parseInt(limit);
-    if (firstImp) {
-      const chatDoc = await Chat.findOne({
-        _id: chatId,
-        userId: req.userId,
-      }).populate("personId", "name imageUrl");
-
-      if (!chatDoc) {
-        return res.status(404).json({ error: "Chat not found" });
-      }
-      if (!chatDoc.chat || chatDoc.chat.length === 0) {
-        return res.status(200).json({
-          message: "Chat fetched successfully",
-          messages: [],
-          chatUserData: {
-            name: chatDoc.personId.name,
-            imageUrl: chatDoc.personId.imageUrl,
-          },
-          hasMore: false,
-        });
-      }
-    }
 
     const result = await Chat.aggregate([
       {
@@ -256,6 +235,7 @@ export const getChatMessages = async (req, res) => {
           person: {
             name: "$person.name",
             imageUrl: "$person.imageUrl",
+            relation: "$person.relation",
           },
         },
       },
